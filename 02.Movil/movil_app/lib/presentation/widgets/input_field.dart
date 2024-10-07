@@ -1,7 +1,7 @@
 import 'package:financial_app/presentation/themes/app_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../domain/provider/transaction_provider.dart';
+import '../../application/providers/transaction_provider.dart';
 import '../themes/app_colors.dart';
 
 class InputField extends StatefulWidget {

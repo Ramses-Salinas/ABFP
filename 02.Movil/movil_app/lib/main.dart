@@ -1,3 +1,4 @@
+
 import 'package:financial_app/presentation/pages/dashboard_page.dart';
 import 'package:financial_app/presentation/pages/planificaction_page.dart';
 import 'package:financial_app/presentation/pages/register_page.dart';
@@ -7,17 +8,25 @@ import 'package:financial_app/presentation/pages/transaction_detail_page.dart';
 import 'package:financial_app/presentation/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'domain/model/transaction.dart';
-import 'domain/provider/transaction_provider.dart';
+import 'application/providers/account_provider.dart';
+import 'application/providers/category_provider.dart';
+import 'application/providers/transaction_provider.dart';
+import 'domain/Transaction/entities/transaction.dart';
+import 'domain/user_management/entities/account.dart';
 import 'presentation/pages/login_page.dart';
 import 'presentation/pages/home_page.dart';
 
 void main() {
-
+  Account account = Account();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider<CategoryProvider>(create: (_) => CategoryProvider()),
+        ChangeNotifierProxyProvider<TransactionProvider, AccountProvider>(
+          create: (_) => AccountProvider(account, Provider.of<TransactionProvider>(_, listen: false)),
+          update: (context, transactionProvider, accountProvider) => accountProvider ?? AccountProvider(account, transactionProvider),
+        ),
       ],
       child: const FinancialWellnessApp(),
     ),
@@ -71,3 +80,4 @@ class FinancialWellnessApp extends StatelessWidget {
     );
   }
 }
+

@@ -2,8 +2,9 @@ import 'package:financial_app/presentation/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../domain/model/transaction.dart';
-import '../../domain/provider/transaction_provider.dart';
+import '../../application/providers/category_provider.dart';
+import '../../application/providers/transaction_provider.dart';
+import '../../domain/Transaction/entities/category.dart';
 import '../themes/app_sizes.dart';
 
 class TransactionAddPage extends StatefulWidget {
@@ -14,39 +15,95 @@ class TransactionAddPage extends StatefulWidget {
 }
 
 class _TransactionDetailState extends State<TransactionAddPage> {
-  String? _selectedCategory = Transaction.categoriasDisponibles.first;
-  TipoTransaccion _tipoTransaccion = TipoTransaccion.Gasto;
+
+  late Category? _selectedCategory;
+  late String _selectedTransactionType;
   late TextEditingController _amountController;
-  TipoMoneda _tipoMoneda = TipoMoneda.Sol ;
+  late String _selectedCurrencyType;
   late TextEditingController _noteController;
   DateTime _selectedDate = DateTime.now();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _amountController = TextEditingController();
     _noteController = TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+      _selectedCategory = categoryProvider.categories.first;
+      final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+      _selectedTransactionType = transactionProvider.transactionTypes.first;
+      _selectedCurrencyType = transactionProvider.currencyTypes.first;
+      print(_selectedCategory);
+
+
+      setState(() {
+        _isLoading = false;
+      });
+
+    });
+
   }
 
   void _addTransaction() {
+    /*
     final newTransaction = Transaction(
       id: 4,
-      fecha: _selectedDate,
-      monto: double.parse(_amountController.text),
-      categoria: _selectedCategory ?? Transaction.categoriasDisponibles.first,
+      fecha: Fecha(_selectedDate),
+      monto: Monto(double.parse(_amountController.text)),
+      categoria: _selectedCategory ?? Category(
+        id: 1, //Debe crearse en la base de datos
+        nombre: NombreCategoria('Desconocida'),
+        icono: IconoCategoria(Icons.help),
+        color: ColorCategoria(Colors.grey),
+      ),
       nota: _noteController.text,
       tipoMoneda: _tipoMoneda,
       tipoTransaccion: _tipoTransaccion,
     );
 
+
     Provider.of<TransactionProvider>(context, listen: false)
         .addTransaction(newTransaction);
+     */
+
+    if (_selectedCategory == null) return;
+
+    // Llamamos al TransactionProvider
+    Provider.of<TransactionProvider>(context, listen: false).addTransaction(
+      amount: double.parse(_amountController.text),
+      categoryId: _selectedCategory!.id,
+      categoryName: _selectedCategory!.nombre.value,
+      categoryIcon: _selectedCategory!.icono.value,
+      categoryColor: _selectedCategory!.color.value,
+      note: _noteController.text,
+      date: _selectedDate,
+      currencyType: _selectedCurrencyType,
+      transactionType:  _selectedTransactionType,
+    );
 
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Añadir Transacción'),
+          backgroundColor: AppColors.backgroundColor,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final categoryProvider = Provider.of<CategoryProvider>(context);
+    final transactionProvider = Provider.of<TransactionProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Añadir Transacción'),
@@ -58,19 +115,20 @@ class _TransactionDetailState extends State<TransactionAddPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
               ListTile(
                 title: const Text('Tipo de transacción'),
-                trailing: DropdownButton<TipoTransaccion>(
-                  value: _tipoTransaccion,
-                  onChanged: (TipoTransaccion? newValue) {
+                trailing: DropdownButton<String>(
+                  value: _selectedTransactionType,
+                  onChanged: (String? newValue) {
                     setState(() {
-                      _tipoTransaccion = newValue!;
+                      _selectedTransactionType = newValue!;
                     });
                   },
-                  items: TipoTransaccion.values.map((TipoTransaccion tipo) {
-                    return DropdownMenuItem<TipoTransaccion>(
+                  items: transactionProvider.transactionTypes.map((String tipo) {
+                    return DropdownMenuItem<String>(
                       value: tipo,
-                      child: Text(tipo.name),
+                      child: Text(tipo),
                     );
                   }).toList(),
                 ),
@@ -88,17 +146,17 @@ class _TransactionDetailState extends State<TransactionAddPage> {
 
               ListTile(
                 title: const Text('Tipo de moneda'),
-                trailing: DropdownButton<TipoMoneda>(
-                  value: _tipoMoneda,
-                  onChanged: (TipoMoneda? newValue) {
+                trailing: DropdownButton<String>(
+                  value: _selectedCurrencyType,
+                  onChanged: (String? newValue) {
                     setState(() {
-                      _tipoMoneda = newValue!;
+                      _selectedCurrencyType = newValue!;
                     });
                   },
-                  items: TipoMoneda.values.map((TipoMoneda tipo) {
-                    return DropdownMenuItem<TipoMoneda>(
+                  items: transactionProvider.currencyTypes.map((String tipo) {
+                    return DropdownMenuItem<String>(
                       value: tipo,
-                      child: Text(tipo.name),
+                      child: Text(tipo),
                     );
                   }).toList(),
                 ),
@@ -108,21 +166,24 @@ class _TransactionDetailState extends State<TransactionAddPage> {
 
               ListTile(
                 title: const Text('Categoría'),
-                trailing: DropdownButton<String>(
+                trailing: DropdownButton<Category>(
                   value: _selectedCategory,
-                  onChanged: (String? newValue) {
+                  onChanged: (Category? newValue) {
                     setState(() {
-                      _selectedCategory = newValue!;
+                      _selectedCategory = newValue;
                     });
                   },
-                  items: Transaction.categoriasDisponibles.map((String categoria) {
-                    return DropdownMenuItem<String>(
+                  items: categoryProvider.isLoading
+                      ? [const DropdownMenuItem<Category>(value: null, child: Text('Cargando...'))]
+                      : categoryProvider.categories.map((Category categoria) {
+                    return DropdownMenuItem<Category>(
                       value: categoria,
-                      child: Text(categoria),
+                      child: Text(categoria.nombre.value),
                     );
                   }).toList(),
                 ),
               ),
+
 
 
               SizedBox(height: AppSizes.mediumSpace(context)),

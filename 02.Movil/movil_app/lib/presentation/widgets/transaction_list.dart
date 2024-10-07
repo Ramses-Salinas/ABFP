@@ -2,48 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../domain/provider/transaction_provider.dart';
+import '../../application/providers/category_provider.dart';
+import '../../application/providers/transaction_provider.dart';
 
 class TransactionList extends StatelessWidget {
-  const TransactionList({super.key});
 
   @override
   Widget build(BuildContext context) {
     final transactionProvider = Provider.of<TransactionProvider>(context);
-
+    final categoryProvider = Provider.of<CategoryProvider>(context);
     final transactions = transactionProvider.transactions.reversed.toList();
 
     return ListView.builder(
       itemCount: transactions.length,
       itemBuilder: (context, index) {
-        final tx = transactions[index];
+        final transaction = transactions[index];
+        final category = categoryProvider.getCategoryById(transaction.categoria.id);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: tx.getCategoryColor(),
-              child: Icon(tx.getCategoryIcon(), color: Colors.white),
+              backgroundColor: category.color.value,
+              child: Icon(category.icono.value, color: Colors.white),
             ),
-            title: Text(tx.categoria),
-            subtitle: Text(_formatDate(tx.fecha)),
+            title: Text(category.nombre.value),
+            subtitle: Text(_formatDate(transaction.fecha.value)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${tx.getCurrencySymbol()}${tx.monto.toStringAsFixed(2)}',
+                  '${transactionProvider.getCurrencySymbolForTransaction(transaction)}${transaction.monto.value.toStringAsFixed(2)}',
                   style: TextStyle(
-                    color: tx.getTransactionColor(),
+                    color: transactionProvider.getTransactionColor(transaction),
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, size: 20,),
+                  icon: const Icon(Icons.arrow_forward_ios, size: 20),
                   onPressed: () {
                     Navigator.pushNamed(
                       context,
                       '/transaction_detail',
-                      arguments: tx,
+                      arguments: transaction,
                     );
                   },
                 ),
@@ -53,7 +54,7 @@ class TransactionList extends StatelessWidget {
               Navigator.pushNamed(
                 context,
                 '/transaction_detail',
-                arguments: tx,
+                arguments: transaction,
               );
             },
           ),

@@ -1,9 +1,16 @@
+import 'package:financial_app/domain/Transaction/services/transaction_service.dart';
 import 'package:financial_app/presentation/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../domain/model/transaction.dart';
-import '../../domain/provider/transaction_provider.dart';
+import '../../application/providers/category_provider.dart';
+import '../../domain/Transaction/entities/category.dart';
+import '../../domain/Transaction/entities/transaction.dart';
+import '../../application/providers/transaction_provider.dart';
+import '../../domain/Transaction/value_objects/amount.dart';
+import '../../domain/Transaction/value_objects/coin_type.dart';
+import '../../domain/Transaction/value_objects/date.dart';
+import '../../domain/Transaction/value_objects/transaction_type.dart';
 import '../themes/app_sizes.dart';
 
 class TransactionDetailPage extends StatefulWidget {
@@ -18,35 +25,43 @@ class TransactionDetailPage extends StatefulWidget {
 class _TransactionDetailState extends State<TransactionDetailPage> {
   late TextEditingController _amountController;
   late TextEditingController _noteController;
-  late String _selectedCategory;
-  late DateTime _selectedDate;
+  late Category _selectedCategory;
+  late Fecha _selectedDate;
   late TipoMoneda _tipoMoneda;
   TipoTransaccion _tipoTransaccion = TipoTransaccion.Gasto;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     _amountController = TextEditingController(text: widget.transaction.monto.toString());
     _noteController = TextEditingController(text: widget.transaction.nota);
     _selectedDate = widget.transaction.fecha;
     _tipoMoneda = widget.transaction.tipoMoneda;
     _tipoTransaccion = widget.transaction.tipoTransaccion;
-    _selectedCategory = widget.transaction.categoria;
-  }
+    _selectedCategory = categoryProvider.categories.firstWhere(
+            (category) => category.id == widget.transaction.categoria.id,
+        orElse: () => categoryProvider.categories.first
+    );
 
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   void _updateTransaction() {
     final updatedTransaction = Transaction(
       id: widget.transaction.id,
-      fecha: _selectedDate,
-      monto: double.parse(_amountController.text),
+      fecha: Fecha(_selectedDate.value),
+      monto: Monto(double.parse(_amountController.text)),
       categoria: _selectedCategory,
       nota: _noteController.text,
       tipoMoneda: _tipoMoneda,
       tipoTransaccion: _tipoTransaccion,
     );
 
-    // Actualizar la transacción en el provider
+
     Provider.of<TransactionProvider>(context, listen: false)
         .updateTransaction(updatedTransaction);
 
@@ -55,6 +70,21 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final categoryProvider = Provider.of<CategoryProvider>(context);
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Detalle de transacción'),
+          backgroundColor: AppColors.backgroundColor,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalle de Transacción'),
@@ -116,22 +146,23 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
 
               ListTile(
                 title: const Text('Categoría'),
-                trailing: DropdownButton<String>(
+                trailing: DropdownButton<Category>(
                   value: _selectedCategory,
-                  onChanged: (String? newValue) {
+                  onChanged: (Category? newValue) {
                     setState(() {
                       _selectedCategory = newValue!;
                     });
                   },
-                  items: Transaction.categoriasDisponibles.map((String categoria) {
-                    return DropdownMenuItem<String>(
+                  items: categoryProvider.isLoading
+                      ? [] // Show an empty list while loading
+                      : categoryProvider.categories.map((Category categoria) {
+                    return DropdownMenuItem<Category>(
                       value: categoria,
-                      child: Text(categoria),
+                      child: Text(categoria.nombre.value),
                     );
                   }).toList(),
                 ),
               ),
-
 
               SizedBox(height: AppSizes.mediumSpace(context)),
 
@@ -140,7 +171,7 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
                   children: [
                     const Text('Fecha:'),
                     SizedBox(width: AppSizes.customSizeWidth(context, 0.36)),
-                    Text(DateFormat('dd/MM/yyyy').format(_selectedDate),
+                    Text(DateFormat('dd/MM/yyyy').format(_selectedDate.value),
                       style: TextStyle(
                           fontSize: AppSizes.customSizeHeight(context, 0.017),
                           fontWeight:FontWeight.bold
@@ -153,13 +184,13 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
                   onPressed: () async {
                     DateTime? picked = await showDatePicker(
                       context: context,
-                      initialDate: _selectedDate,
+                      initialDate: _selectedDate.value,
                       firstDate: DateTime(2000),
                       lastDate: DateTime(2101),
                     );
                     if (picked != null && picked != _selectedDate) {
                       setState(() {
-                        _selectedDate = picked;
+                        _selectedDate = picked as Fecha;
                       });
                     }
                   },

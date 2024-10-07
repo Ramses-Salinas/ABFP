@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../application/providers/account_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/input_field.dart';
@@ -6,13 +8,12 @@ import '../widgets/transaction_list.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 
-class HomePage extends StatefulWidget { // Cambiar a StatefulWidget
+class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -23,6 +24,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final accountProvider = Provider.of<AccountProvider>(context);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -59,13 +63,16 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
                             ),
                             SizedBox(height: AppSizes.customSizeHeight(context, 0.005)),
-                            const Text(
-                              "S/385.00",
-                              style: TextStyle(color: AppColors.textPrimary, fontSize: 40, fontWeight: FontWeight.bold),
+                            SizedBox(
+                              width: AppSizes.customSizeWidth(context, 0.6),
+                              child: Text(
+                                "S/${accountProvider.saldo}",
+                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 40, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ),
-                        SizedBox(width: AppSizes.customSizeWidth(context, 0.36)),
+                        SizedBox(width: AppSizes.customSizeWidth(context, 0.12)),
                         CustomButton(
                           icon: Icons.add_circle,
                           size: AppSizes.customSizeWidth(context, 0.1),
@@ -88,7 +95,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Expanded(
+            Expanded(
               child: TransactionList(),
             ),
           ],
