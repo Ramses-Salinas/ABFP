@@ -38,6 +38,7 @@ dependencies:
   provider: ^6.1.2
   intl: ^0.17.0
   fl_chart: ^0.40.0
+  graphql_flutter: ^5.0.0
 
 dev_dependencies:
   flutter_test:
