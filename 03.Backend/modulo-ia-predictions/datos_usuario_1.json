@@ -1,0 +1,121 @@
+{
+  "usuarios": [
+    {
+      "usuario_id": 1,
+      "transacciones": [
+        {
+          "fecha": "2023-01-05",
+          "descripcion": "Supermercado",
+          "categoria": "Alimentos",
+          "monto": 120.5
+        },
+        {
+          "fecha": "2023-01-05",
+          "descripcion": "Supermercado",
+          "categoria": "Alimentos",
+          "monto": 120.5
+        },
+        {
+          "fecha": "2023-01-10",
+          "descripcion": "Restaurante",
+          "categoria": "Restaurantes",
+          "monto": 55.0
+        },
+        {
+          "fecha": "2023-01-15",
+          "descripcion": "Cine",
+          "categoria": "Entretenimiento",
+          "monto": 25.0
+        },
+        {
+          "fecha": "2023-01-20",
+          "descripcion": "Gasolina",
+          "categoria": "Transporte",
+          "monto": 80.0
+        },
+        {
+          "fecha": "2023-01-25",
+          "descripcion": "Ropa",
+          "categoria": "Vestimenta",
+          "monto": 150.0
+        },
+        {
+          "fecha": "2023-02-02",
+          "descripcion": "Supermercado",
+          "categoria": "Alimentos",
+          "monto": 100.0
+        },
+        {
+          "fecha": "2023-02-10",
+          "descripcion": "Restaurante",
+          "categoria": "Restaurantes",
+          "monto": 60.0
+        },
+        {
+          "fecha": "2023-02-18",
+          "descripcion": "Concierto",
+          "categoria": "Entretenimiento",
+          "monto": 75.0
+        },
+        {
+          "fecha": "2023-02-25",
+          "descripcion": "Gasolina",
+          "categoria": "Transporte",
+          "monto": 70.0
+        },
+        {
+          "fecha": "2023-03-05",
+          "descripcion": "Supermercado",
+          "categoria": "Alimentos",
+          "monto": 110.0
+        },
+        {
+          "fecha": "2023-03-12",
+          "descripcion": "Restaurante",
+          "categoria": "Restaurantes",
+          "monto": 45.0
+        },
+        {
+          "fecha": "2023-03-20",
+          "descripcion": "Gasolina",
+          "categoria": "Transporte",
+          "monto": 90.0
+        },
+        {
+          "fecha": "2023-03-28",
+          "descripcion": "Viaje",
+          "categoria": "Viajes",
+          "monto": 300.0
+        }
+      ],
+      "ingresos": [
+        {
+          "fecha": "2023-01-01",
+          "monto": 2500.0
+        },
+        {
+          "fecha": "2023-02-01",
+          "monto": 2550.0
+        },
+        {
+          "fecha": "2023-03-01",
+          "monto": 2600.0
+        }
+      ],
+      "saldos": [
+        {
+          "fecha": "2023-01-01",
+          "saldo": 1000.0
+        },
+        {
+          "fecha": "2023-02-01",
+          "saldo": 1800.0
+        },
+        {
+          "fecha": "2023-03-01",
+          "saldo": 2500.0
+        }
+      ]
+    }
+  ]
+}

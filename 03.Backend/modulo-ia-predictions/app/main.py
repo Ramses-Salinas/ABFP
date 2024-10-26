@@ -1,15 +1,14 @@
 from fastapi import FastAPI
+import strawberry
+from strawberry.fastapi import GraphQLRouter
 
-from app.api import predicciones
+from app.schema import schema  # Asegúrate de que la ruta sea correcta
 
-app = FastAPI(
-    title="Módulo de Modelos IA - Predicciones",
-    description="API para realizar predicciones con modelos de IA.",
-    version="0.1.0",
-)
+app = FastAPI()
 
-app.include_router(predicciones.router, prefix="/predicciones")
+graphql_app = GraphQLRouter(schema)
+app.include_router(graphql_app, prefix="/graphql")
 
-@app.get("/health", tags=["Health"])
-async def health_check():
-    return {"status": "ok"}
+@app.get("/")
+async def root():
+    return {"message": "Hola desde FastAPI"}
