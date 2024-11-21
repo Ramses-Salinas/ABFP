@@ -65,7 +65,9 @@ module.exports = (_, argv) => ({
       name: "iu_presupuesto",
       filename: "remoteEntry.js",
       remotes: {},
-      exposes: {},
+      exposes: {
+        './App': './src/App.tsx'
+      },
       shared: {
         ...deps,
         react: {
