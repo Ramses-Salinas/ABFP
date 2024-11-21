@@ -7,6 +7,8 @@ import ManejoDatos from './components/manejodatos';
 import './App.css';
 import ReactDOM from 'react-dom';
 
+import './index.css';
+
 const theme = createTheme();
 
 type View = 'login' | 'register' | 'profile' | 'manejoDatos';
