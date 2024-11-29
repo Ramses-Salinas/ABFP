@@ -1,0 +1,11 @@
+# See http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+spring:
+  thymeleaf.cache: false
+  main.show-banner: false
+
+appsync:
+  endpoint: https://6uebol3qyvgwlfwrjm6tpf2iuq.appsync-api.us-east-2.amazonaws.com/graphql
+  apiKey: da2-iysrja5w5jfkzljzn4jlwney4u
+
+server:
+  port: 8081
