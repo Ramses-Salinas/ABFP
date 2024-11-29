@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../application/providers/account_provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/input_field.dart';
@@ -9,6 +10,8 @@ import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -26,6 +29,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
 
     final accountProvider = Provider.of<AccountProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.currentUser?.nombre ?? "Usuario";
+
+    if (userProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -43,7 +52,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: AppSizes.customSizeHeight(context, 0.001)),
                   Text(
-                    "Adrián Quispe",
+                    userName,
                     style: TextStyle(fontSize: AppSizes.mediumSpace(context), fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: AppSizes.mediumSpace(context)),
@@ -95,7 +104,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(
+            const Expanded(
               child: TransactionList(),
             ),
           ],

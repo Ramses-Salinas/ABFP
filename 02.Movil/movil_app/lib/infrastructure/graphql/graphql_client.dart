@@ -1,39 +1,24 @@
-import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import '../../../config/config.dart';
 
-class GraphQLClientManager {
-  static final HttpLink httpLink = HttpLink('https://example.com/graphql');
+class GraphQLClientProvider {
+  static final HttpLink _httpLink = HttpLink(
+    AWSConfig.graphqlEndpoint,
+    defaultHeaders: {
+      'x-api-key': AWSConfig.apiKey,
+    },
+  );
 
-  static ValueNotifier<GraphQLClient> initClient() {
-    final AuthLink authLink = AuthLink(
-      getToken: () async => 'Bearer <Your-Token>',
-    );
+  static final GraphQLClient client = GraphQLClient(
+    link: _httpLink,
+    cache: GraphQLCache(store: InMemoryStore()),
+  );
 
-    Link link = authLink.concat(httpLink);
-
-    final GraphQLClient client = GraphQLClient(
-      cache: GraphQLCache(store: InMemoryStore()),
-      link: link,
-    );
-
-    return ValueNotifier(client);
+  static GraphQLClient getClient() {
+    return client;
   }
 
-  static Future<QueryResult> runQuery(String query, {Map<String, dynamic>? variables}) async {
-    final client = GraphQLClientManager.initClient().value;
-    final QueryOptions options = QueryOptions(
-      document: gql(query),
-      variables: variables ?? {},
-    );
-    return await client.query(options);
-  }
-
-  static Future<QueryResult> runMutation(String mutation, {Map<String, dynamic>? variables}) async {
-    final client = GraphQLClientManager.initClient().value;
-    final MutationOptions options = MutationOptions(
-      document: gql(mutation),
-      variables: variables ?? {},
-    );
-    return await client.mutate(options);
+  static void clearCache() {
+    client.cache.store.reset();
   }
 }

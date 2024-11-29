@@ -35,7 +35,7 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
   void initState() {
     super.initState();
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    _amountController = TextEditingController(text: widget.transaction.monto.toString());
+    _amountController = TextEditingController(text: widget.transaction.monto.value.toString());
     _noteController = TextEditingController(text: widget.transaction.nota);
     _selectedDate = widget.transaction.fecha;
     _tipoMoneda = widget.transaction.tipoMoneda;
@@ -53,6 +53,7 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
   void _updateTransaction() {
     final updatedTransaction = Transaction(
       id: widget.transaction.id,
+      gmail: widget.transaction.gmail,
       fecha: Fecha(_selectedDate.value),
       monto: Monto(double.parse(_amountController.text)),
       categoria: _selectedCategory,

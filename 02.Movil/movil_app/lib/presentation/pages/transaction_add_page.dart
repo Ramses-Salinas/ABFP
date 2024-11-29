@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../application/providers/category_provider.dart';
 import '../../application/providers/transaction_provider.dart';
 import '../../domain/Transaction/entities/category.dart';
+import '../../infrastructure/graphql/graphql_client.dart';
 import '../themes/app_sizes.dart';
 
 class TransactionAddPage extends StatefulWidget {
@@ -23,6 +24,8 @@ class _TransactionDetailState extends State<TransactionAddPage> {
   late TextEditingController _noteController;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
+  final myGraphQLClient = GraphQLClientProvider.getClient();
+
 
   @override
   void initState() {
@@ -47,7 +50,7 @@ class _TransactionDetailState extends State<TransactionAddPage> {
 
   }
 
-  void _addTransaction() {
+  Future<void> _addTransaction() async {
     /*
     final newTransaction = Transaction(
       id: 4,
@@ -72,6 +75,7 @@ class _TransactionDetailState extends State<TransactionAddPage> {
     if (_selectedCategory == null) return;
 
     // Llamamos al TransactionProvider
+    /*
     Provider.of<TransactionProvider>(context, listen: false).addTransaction(
       amount: double.parse(_amountController.text),
       categoryId: _selectedCategory!.id,
@@ -83,6 +87,27 @@ class _TransactionDetailState extends State<TransactionAddPage> {
       currencyType: _selectedCurrencyType,
       transactionType:  _selectedTransactionType,
     );
+
+     */
+
+
+    try {
+      //await transactionService.registrarTransaccion(transaction);
+      await Provider.of<TransactionProvider>(context, listen: false).addTransaction(
+        amount: double.parse(_amountController.text),
+        categoryId: _selectedCategory!.id,
+        categoryName: _selectedCategory!.nombre.value,
+        categoryIcon: _selectedCategory!.icono.value,
+        categoryColor: _selectedCategory!.color.value,
+        note: _noteController.text,
+        date: _selectedDate,
+        currencyType: _selectedCurrencyType,
+        transactionType:  _selectedTransactionType,
+      );
+      print('Transacción registrada con éxito');
+    } catch (e) {
+      print('Error al registrar transacción: $e');
+    }
 
     Navigator.pop(context);
   }

@@ -61,8 +61,9 @@ class LocalDatabase {
     _transactions = [
       Transaction(
         id: 1,
+        gmail: 'yosmar.tejeda@unmsm.edu.pe',
         fecha: Fecha(DateTime.now().subtract(const Duration(days: 2)),),
-        monto: Monto( 50.0),
+        monto: Monto( 50),
         categoria: _categories[0], // Comida
         nota: 'Cena en restaurante',
         tipoMoneda: TipoMoneda.Sol,
@@ -70,8 +71,9 @@ class LocalDatabase {
       ),
       Transaction(
         id: 2,
+        gmail: 'yosmar.tejeda@unmsm.edu.pe',
         fecha: Fecha(DateTime.now().subtract(const Duration(days: 1)),),
-        monto: Monto(75.0),
+        monto: Monto(75),
         categoria: _categories[1], // Transporte
         nota: 'Taxi',
         tipoMoneda: TipoMoneda.Sol,
@@ -79,8 +81,9 @@ class LocalDatabase {
       ),
       Transaction(
         id: 3,
+        gmail: 'yosmar.tejeda@unmsm.edu.pe',
         fecha: Fecha(DateTime.now()),
-        monto: Monto(1000.0),
+        monto: Monto(1000),
         categoria: _categories[4], // Transporte
         nota: 'Pago mensual',
         tipoMoneda: TipoMoneda.Sol,

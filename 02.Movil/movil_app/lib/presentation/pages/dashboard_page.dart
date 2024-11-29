@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 
 import '../themes/app_colors.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
-
+/*
 class DashboardPage extends StatefulWidget {
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -148,5 +148,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
+
+ */
 
 

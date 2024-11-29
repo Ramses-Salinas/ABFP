@@ -7,7 +7,7 @@ import '../entities/transaction.dart';
 
 class TransactionAggregate {
   //final Transaction _transaction;
-  final TransactionRepository _transactionRepository = TransactionRepository();
+  final TransactionRepository2 _transactionRepository = TransactionRepository2();
 
   TransactionAggregate();
 

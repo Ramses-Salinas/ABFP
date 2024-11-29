@@ -44,6 +44,18 @@ class CategoryProvider with ChangeNotifier {
     );
   }
 
+  Category getCategoryByName(String categoriaNombre) {
+    return categories.firstWhere(
+          (cat) => cat.nombre.value == categoriaNombre,
+      orElse: () => Category(
+        id: 0,
+        nombre: NombreCategoria('Desconocida'),
+        icono: IconoCategoria(Icons.help),
+        color: ColorCategoria(Colors.grey),
+      ),
+    );
+  }
+
   List<Category> getAllCategories(){
     return _categoryRepository.getAllCategories();
   }

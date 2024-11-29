@@ -6,9 +6,4 @@ class Monto {
       throw ArgumentError('El monto no puede ser negativo');
     }
   }
-
-  @override
-  String toString() => value.toStringAsFixed(2);
-  double toDouble() => value;
-
 }

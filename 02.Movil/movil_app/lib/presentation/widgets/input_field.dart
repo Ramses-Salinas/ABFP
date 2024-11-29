@@ -7,11 +7,13 @@ import '../themes/app_colors.dart';
 class InputField extends StatefulWidget {
   final String hintText;
   final bool obscureText;
+  final TextEditingController controller;
 
   const InputField({
     super.key,
     required this.hintText,
     this.obscureText = false,
+    required this.controller,
   });
 
   @override
@@ -30,6 +32,7 @@ class _InputFieldState extends State<InputField> {
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: widget.controller,
       obscureText: _isObscure,
       decoration: InputDecoration(
         hintText: widget.hintText,
@@ -56,6 +59,7 @@ class _InputFieldState extends State<InputField> {
     );
   }
 }
+
 
 
 class SearchField extends StatelessWidget {

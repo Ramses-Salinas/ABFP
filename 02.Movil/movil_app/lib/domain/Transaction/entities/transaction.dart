@@ -7,6 +7,7 @@ import 'category.dart';
 
 class Transaction {
   final int id;
+  final String gmail;
   final Fecha fecha;
   final Monto monto;
   final Category categoria;
@@ -16,6 +17,7 @@ class Transaction {
 
   Transaction({
     required this.id,
+    required this.gmail,
     required this.fecha,
     required this.monto,
     required this.categoria,
@@ -26,6 +28,7 @@ class Transaction {
 
   @override
   String toString() {
-    return 'Transaction(id: $id, fecha: $fecha, monto: $monto, categoria: ${categoria.nombre}, tipoMoneda: $tipoMoneda, tipoTransaccion: $tipoTransaccion)';
+    return 'Transaction(id: $id, gmail: $gmail, fecha: $fecha, monto: $monto, categoria: ${categoria.nombre}, tipoMoneda: $tipoMoneda, tipoTransaccion: $tipoTransaccion)';
   }
+
 }

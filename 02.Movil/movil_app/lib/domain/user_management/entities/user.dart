@@ -1,17 +1,14 @@
 import '../value_objects/account.dart';
 
-class Usuario {
-  final int idUsuario;
-  final String nombre;
-  final String email;
-  final String contrasenia;
-  final Cuenta cuenta;
+class User {
+  String nombre;
+  String gmail;
+  String contrasenia;
 
-  Usuario({
-    required this.idUsuario,
+  User({
     required this.nombre,
-    required this.email,
+    required this.gmail,
     required this.contrasenia,
-    required this.cuenta,
   });
+
 }

@@ -1,3 +1,4 @@
+import 'package:financial_app/application/providers/user_provider.dart';
 import 'package:financial_app/domain/Transaction/value_objects/coin_type.dart';
 import 'package:financial_app/domain/Transaction/value_objects/transaction_type.dart';
 import 'package:flutter/material.dart';
@@ -8,31 +9,50 @@ import '../../domain/Transaction/entities/transaction.dart';
 class TransactionProvider with ChangeNotifier {
   List<Transaction> _transactions = [];
   bool _isLoading = true;
-  final transactionService = TransactionRegister();
+  final transactionRegister= TransactionRegister();
+  final TransactionService transactionService;
+  final UserProvider userProvider;
+
+
   bool get isLoading => _isLoading;
 
   List<Transaction> _filteredTransactions = [];
-  List<Transaction> get transactions => _filteredTransactions.isNotEmpty ? [..._filteredTransactions] : [..._transactions];
-  List<String> get currencyTypes => transactionService.getCurrencyTypes();
+  List<Transaction> get transactions {
+    return _filteredTransactions;
+  }
 
-  List<String> get transactionTypes => transactionService.getTransactionTypes();
+  List<String> get currencyTypes => transactionRegister.getCurrencyTypes();
 
-  TransactionProvider() {
+  List<String> get transactionTypes => transactionRegister.getTransactionTypes();
+
+  TransactionProvider({required this.transactionService, required this.userProvider}) {
     loadTransactions();
   }
 
-  void loadTransactions() {
+  Future<void> loadTransactions() async {
     _isLoading = true;
-    notifyListeners();
 
-    _transactions = transactionService.getAllTransactions();
-    _filteredTransactions = [];
+    final String? gmail = userProvider.currentGmail;
+
+    if (gmail == null) {
+      print("Usuario no autenticado. No se puede cargar transacciones.");
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _transactions = await transactionService.obtenerTransacciones(gmail);
+      _filteredTransactions = _transactions;
+    } catch (e) {
+      print("Error al cargar transacciones: $e");
+    }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  void addTransaction({
+  Future<void> addTransaction({
     required double amount,
     required int categoryId,
     required String categoryName,
@@ -42,11 +62,19 @@ class TransactionProvider with ChangeNotifier {
     required DateTime date,
     required String currencyType,
     required String transactionType,
-  }) {
-    int newId = _transactions.isNotEmpty ? _transactions.last.id + 1 : 1;
+  }) async {
+    int newId = (DateTime.now().millisecondsSinceEpoch ~/ 100000).toInt();
+    final String? gmail = userProvider.currentGmail;
+
+    if (gmail == null) {
+      print("Usuario no autenticado. No se puede agregar transacciones.");
+      return;
+    }
+
 
     final newTransaction = transactionService.crearTransaccion(
       id: newId,
+      gmail: gmail,
       amount: amount,
       categoryId: categoryId,
       categoryName: categoryName,
@@ -58,18 +86,18 @@ class TransactionProvider with ChangeNotifier {
       transactionType: transactionType,
     );
 
-    transactionService.registrar(newTransaction);
+    await transactionService.registrarTransaccion(newTransaction);
 
-    notifyListeners();
     loadTransactions();
+
   }
 
-  void updateTransaction(Transaction updatedTransaction) {
+  Future<void> updateTransaction(Transaction updatedTransaction) async {
 
-    transactionService.actualizar(updatedTransaction);
+    await transactionService.actualizarTransaccion(updatedTransaction);
 
-    notifyListeners();
     loadTransactions();
+
   }
 
 
@@ -82,8 +110,9 @@ class TransactionProvider with ChangeNotifier {
   }
 
   void searchTransactions(String query) {
+
     if (query.isEmpty) {
-      _filteredTransactions = [];
+      _filteredTransactions = _transactions;
     } else {
       _filteredTransactions = _transactions.where((tx) {
         final queryLower = query.toLowerCase();

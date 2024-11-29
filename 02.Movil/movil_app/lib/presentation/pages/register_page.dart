@@ -1,11 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/input_field.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+
+  late TextEditingController nameController = TextEditingController();
+  late TextEditingController emailController = TextEditingController();
+  late TextEditingController passwordController = TextEditingController();
+  late TextEditingController confirmPasswordController = TextEditingController();
+
+  Future<void> register() async{
+
+    final String name = nameController.text;
+    final String gmail = emailController.text;
+    final String password = passwordController.text;
+    final String confirmPassword = confirmPasswordController.text;
+
+    if (name.isEmpty || gmail.isEmpty || password.isEmpty || confirmPassword.isEmpty)  {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Completa todos los campos')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    try {
+      print("Datos enviados:");
+      print("Nombre: $name");
+      print("Email: $gmail");
+      print("Password: $password");
+
+      await userProvider.addUser(
+        gmail: gmail,
+        name: name,
+        password: password,
+      );
+      print('Usuario registrado con éxito');
+    } catch (e) {
+      print('Error al registrar el usuario: $e');
+    }
+
+    Navigator.popAndPushNamed(context, '/home');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,25 +87,32 @@ class RegisterPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSizes.largeSpace(context)),
-                const InputField(
+
+                InputField(
+                  controller: nameController,
                   hintText: 'Nombre completo',
                   obscureText: false,
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
-                const InputField(
+                InputField(
+                  controller: emailController,
                   hintText: 'Correo',
                   obscureText: false,
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
-                const InputField(
+                InputField(
+                  controller: passwordController,
                   hintText: 'Contraseña',
                   obscureText: true,
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
-                const InputField(
+                InputField(
+                  controller: confirmPasswordController,
                   hintText: 'Confirmar contraseña',
                   obscureText: true,
                 ),
+
+
                 SizedBox(height: AppSizes.smallSpace(context)),
                 Align(
                   alignment: Alignment.centerRight,
@@ -68,9 +129,7 @@ class RegisterPage extends StatelessWidget {
                 SizedBox(height: AppSizes.customSizeHeight(context, 0.02)),
                 GeneralButton(
                   text: 'Registrarse',
-                  onPressed: () {
-                    // Handle login logic here
-                  },
+                  onPressed: register
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
                 GeneralButton(

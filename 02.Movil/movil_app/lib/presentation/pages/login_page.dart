@@ -1,11 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/input_field.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+
+  Future<void> login() async{
+
+    final String gmail = emailController.text.trim();
+    final String password = passwordController.text.trim();
+
+    if (gmail.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Completa todos los campos')),
+    );
+    return;
+    }
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.authUser(gmail, password);
+    final usuario = userProvider.currentUser;
+
+    if (usuario == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Credenciales incorrectas')),
+      );
+    } else {
+    Navigator.popAndPushNamed(context, '/home');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +70,14 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSizes.largeSpace(context)),
-                const InputField(
+                InputField(
+                  controller: emailController,
                   hintText: 'Correo',
                   obscureText: false,
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
-                const InputField(
+                InputField(
+                  controller: passwordController,
                   hintText: 'Contraseña',
                   obscureText: true,
                 ),
@@ -58,9 +97,7 @@ class LoginPage extends StatelessWidget {
                 SizedBox(height: AppSizes.customSizeHeight(context, 0.02)),
                 GeneralButton(
                   text: 'Iniciar sesión',
-                  onPressed: () {
-                    Navigator.popAndPushNamed(context, '/home');
-                  },
+                  onPressed: login
                 ),
                 SizedBox(height: AppSizes.smallSpace(context)),
                 GeneralButton(
