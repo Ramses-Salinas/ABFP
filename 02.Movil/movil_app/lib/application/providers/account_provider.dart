@@ -37,12 +37,10 @@ class AccountProvider with ChangeNotifier {
       Transaction newTransaction = event.newTransaction;
       Transaction oldTransaction = event.oldTransaction;
 
-      // Revertir el saldo de la transacción anterior
       _account.saldo -= oldTransaction.tipoTransaccion == TipoTransaccion.Ingreso
           ? oldTransaction.monto.value
           : -oldTransaction.monto.value;
 
-      // Aplicar el saldo de la nueva transacción
       _account.saldo += newTransaction.tipoTransaccion == TipoTransaccion.Ingreso
           ? newTransaction.monto.value
           : -newTransaction.monto.value;

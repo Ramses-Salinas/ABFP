@@ -1,5 +1,8 @@
 import 'package:financial_app/presentation/themes/app_sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../application/providers/user_provider.dart';
 import '../themes/app_colors.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
@@ -9,8 +12,11 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-
   int _selectedIndex = 3;
+
+  bool _emailNotifications = true;
+  bool _alerts = false;
+  bool _weeklySummary = true;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -20,61 +26,71 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: AppColors.secondary,
       appBar: AppBar(
-        title: Center(child: Text('Ajustes', style: Theme.of(context).textTheme.displayLarge,)),
+        title: Center(
+          child: Text(
+            'Ajustes',
+            style: Theme.of(context).textTheme.displayLarge,
+          ),
+        ),
         backgroundColor: AppColors.backgroundColor,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(AppSizes.customSizeWidth(context, 0.03)),
+          padding: EdgeInsets.all(AppSizes.smallWidthSpace(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: EdgeInsets.all(AppSizes.customSizeWidth(context, 0.03)),
+                padding: EdgeInsets.all(AppSizes.mediumWidthSpace(context)),
                 color: AppColors.lightPrimary,
                 child: Column(
                   children: [
                     Center(
-                        child: Text(
-                            'Información Personal',
-                            style: TextStyle(
-                                color: AppColors.textBlack,
-                                fontSize: AppSizes.customSizeHeight(context, 0.02),
-                            )
-                        )
+                      child: Text(
+                        'Información Personal',
+                        style: TextStyle(
+                          color: AppColors.textBlack,
+                          fontSize: AppSizes.customSizeHeight(context, 0.02),
+                        ),
+                      ),
                     ),
-                    SizedBox(height:  AppSizes.customSizeHeight(context, 0.016)),
+                    SizedBox(height: AppSizes.mediumSpace(context)),
                     CircleAvatar(
-                      radius:  AppSizes.customSizeHeight(context, 0.05),
+                      radius: AppSizes.customSizeHeight(context, 0.05),
                       backgroundColor: AppColors.textPrimary,
                       child: Icon(
-                          Icons.person,
-                          size:  AppSizes.customSizeHeight(context, 0.08),
-                          color: AppColors.primary
+                        Icons.person,
+                        size: AppSizes.customSizeHeight(context, 0.08),
+                        color: AppColors.primary,
                       ),
                     ),
                     SizedBox(height: AppSizes.smallSpace(context)),
-                    Text('Adrián Quispe',
+                    Text(
+                      userProvider.currentUser!.nombre,
                       style: TextStyle(
-                          color: AppColors.textBlack,
-                          fontSize: AppSizes.customSizeHeight(context, 0.018)
-                      )
+                        color: AppColors.textBlack,
+                        fontSize: AppSizes.customSizeHeight(context, 0.018),
+                      ),
                     ),
-                    Text('adrianquispe@unmsm.edu.pe',
-                        style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: AppSizes.customSizeHeight(context, 0.016)
-                        )
+                    Text(
+                      userProvider.currentUser!.gmail,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: AppSizes.customSizeHeight(context, 0.016),
+                      ),
                     ),
-                    SizedBox(height:  AppSizes.customSizeHeight(context, 0.016)),
-                    Text('Contraseña',
-                        style: TextStyle(
-                            color: AppColors.textBlack,
-                            fontSize: AppSizes.customSizeHeight(context, 0.02)
-                        )
+                    SizedBox(height: AppSizes.mediumSpace(context)),
+                    Text(
+                      'Contraseña',
+                      style: TextStyle(
+                        color: AppColors.textBlack,
+                        fontSize: AppSizes.customSizeHeight(context, 0.02),
+                      ),
                     ),
                     SizedBox(
                       height: AppSizes.customSizeHeight(context, 0.05),
@@ -86,13 +102,13 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: AppSizes.smallSpace(context)),
-                    Text('Nueva contraseña',
-                        style: TextStyle(
-                            color: AppColors.textBlack,
-                            fontSize: AppSizes.customSizeHeight(context, 0.02)
-                        )
+                    Text(
+                      'Nueva contraseña',
+                      style: TextStyle(
+                        color: AppColors.textBlack,
+                        fontSize: AppSizes.customSizeHeight(context, 0.02),
+                      ),
                     ),
                     SizedBox(
                       height: AppSizes.customSizeHeight(context, 0.05),
@@ -107,69 +123,100 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 color: AppColors.lightPrimary,
                 child: Column(
                   children: [
-                    Text('Notificaciones', style: TextStyle(color: AppColors.textBlack, fontSize: 20)),
-                    SwitchListTile(
-                      title: Text('Notificaciones de correo', style: TextStyle(color: AppColors.textBlack,)),
-                      value: true,
-                      onChanged: (value) {},
+                    const Text(
+                      'Notificaciones',
+                      style: TextStyle(color: AppColors.textBlack, fontSize: 20),
                     ),
                     SwitchListTile(
-                      title: Text('Alertas', style: TextStyle(color: AppColors.textBlack,)),
-                      value: false,
-                      onChanged: (value) {},
+                      title: const Text(
+                        'Notificaciones de correo',
+                        style: TextStyle(color: AppColors.textBlack),
+                      ),
+                      value: _emailNotifications,
+                      onChanged: (value) {
+                        setState(() {
+                          _emailNotifications = value;
+                        });
+                      },
                     ),
                     SwitchListTile(
-                      title: Text('Resumen semanal', style: TextStyle(color: AppColors.textBlack,)),
-                      value: true,
-                      onChanged: (value) {},
+                      title: const Text(
+                        'Alertas',
+                        style: TextStyle(color: AppColors.textBlack),
+                      ),
+                      value: _alerts,
+                      onChanged: (value) {
+                        setState(() {
+                          _alerts = value;
+                        });
+                      },
+                    ),
+                    SwitchListTile(
+                      title: const Text(
+                        'Resumen semanal',
+                        style: TextStyle(color: AppColors.textBlack),
+                      ),
+                      value: _weeklySummary,
+                      onChanged: (value) {
+                        setState(() {
+                          _weeklySummary = value;
+                        });
+                      },
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Center(
                 child: Container(
-                  width: AppSizes.customSizeWidth(context, 1),
+                  width: AppSizes.screenWidth(context),
                   color: AppColors.lightPrimary,
                   child: Column(
                     children: [
-                      Text('Gestión de datos', style: TextStyle(color: AppColors.textBlack, fontSize: 20)),
+                      const Text(
+                        'Gestión de datos',
+                        style: TextStyle(color: AppColors.textBlack, fontSize: 20),
+                      ),
                       ElevatedButton(
                         onPressed: () {
                           // Handle data management
                         },
-                        child: Text('Manejo de datos'),
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: AppColors.primary, backgroundColor: AppColors.lightPrimary,
+                          foregroundColor: AppColors.primary,
+                          backgroundColor: AppColors.lightPrimary,
                         ),
+                        child: const Text('Manejo de datos'),
                       ),
                       ElevatedButton(
                         onPressed: () {
                           // Handle account deletion
                         },
-                        child: Text('Borrar cuenta'),
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: AppColors.textPrimary, backgroundColor: Colors.red,
+                          foregroundColor: AppColors.textPrimary,
+                          backgroundColor: Colors.red,
                         ),
+                        child: const Text('Borrar cuenta'),
                       ),
                     ],
                   ),
                 ),
               ),
+              SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle save changes
                   },
-                  child: Text('Guardar cambios'),
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary, backgroundColor: AppColors.buttonPrimary,
+                    foregroundColor: AppColors.textPrimary,
+                    backgroundColor: AppColors.buttonPrimary,
                   ),
+                  child: const Text('Guardar cambios'),
                 ),
               ),
             ],

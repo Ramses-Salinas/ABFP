@@ -193,8 +193,8 @@ class GraphQLUserRepository implements UserRepository {
 
   @override
   Future<Map<String, dynamic>> autenticarUsuario(String gmail, String password) async {
-    const mutation = '''
-    mutation AutenticarUsuario(\$Gmail: String!, \$Pasword: String!) {
+    const query = '''
+    query AutenticarUsuario(\$Gmail: String!, \$Pasword: String!) {
       autenticarUsuario(Gmail: \$Gmail, Pasword: \$Pasword) {
         Gmail
         Nombre
@@ -209,12 +209,12 @@ class GraphQLUserRepository implements UserRepository {
     };
 
     try {
-      final MutationOptions options = MutationOptions(
-        document: gql(mutation),
+      final QueryOptions options = QueryOptions(
+        document: gql(query),
         variables: variables,
       );
 
-      final QueryResult result = await client.mutate(options);
+      final QueryResult result = await client.query(options);
 
       if (result.hasException) {
         throw Exception('Error al autenticar usuario: ${result.exception.toString()}');

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../application/providers/planning_provider.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
@@ -12,7 +14,6 @@ class PlanningPage extends StatefulWidget {
 }
 
 class _PlanningPageState extends State<PlanningPage> {
-
   int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
@@ -23,9 +24,20 @@ class _PlanningPageState extends State<PlanningPage> {
 
   @override
   Widget build(BuildContext context) {
+    final presupuestoProvider = Provider.of<PresupuestoProvider>(context);
+
+    if (presupuestoProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Planificación',style: Theme.of(context).textTheme.displayLarge,)),
+        title: Center(
+          child: Text(
+            'Planificación',
+            style: Theme.of(context).textTheme.displayLarge,
+          ),
+        ),
         backgroundColor: AppColors.backgroundColor,
       ),
       body: Padding(
@@ -34,11 +46,11 @@ class _PlanningPageState extends State<PlanningPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: AppSizes.mediumSpace(context)),
-            _buildBudgetCard(),
+            _buildBudgetCard(context, presupuestoProvider),
             SizedBox(height: AppSizes.mediumSpace(context)),
-            _buildSavingsGoalCard(),
+            _buildSavingsGoalCard(context, presupuestoProvider),
             SizedBox(height: AppSizes.mediumSpace(context)),
-            _buildSuggestions(),
+            _buildSuggestions(context, presupuestoProvider),
           ],
         ),
       ),
@@ -49,7 +61,8 @@ class _PlanningPageState extends State<PlanningPage> {
     );
   }
 
-  Widget _buildBudgetCard() {
+  Widget _buildBudgetCard(
+      BuildContext context, PresupuestoProvider presupuestoProvider) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.lightPrimary,
@@ -64,71 +77,58 @@ class _PlanningPageState extends State<PlanningPage> {
               Text(
                 'Presupuesto Mensual',
                 style: TextStyle(
-                    fontSize: AppSizes.customSizeHeight(context, 0.02),
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textBlack,
+                  fontSize: AppSizes.customSizeHeight(context, 0.02),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textBlack,
                 ),
               ),
-
               SizedBox(width: AppSizes.customSizeWidth(context, 0.2)),
-
-              Text('\$ 500.00',
-                  style: TextStyle(
-                      fontSize: AppSizes.customSizeHeight(context, 0.024),
-                    color: AppColors.textBlack,
-                  )
+              Text(
+                'S/ ${presupuestoProvider.presupuesto.presupuestoMensual}',
+                style: TextStyle(
+                  fontSize: AppSizes.customSizeHeight(context, 0.024),
+                  color: AppColors.textBlack,
+                ),
               ),
             ],
           ),
-
           SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
-
           LinearProgressIndicator(
             value: 0.7,
             minHeight: AppSizes.customSizeHeight(context, 0.01),
             backgroundColor: Colors.grey[300],
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
           ),
-
           SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
-
-          Text('S/ 350.00',
-              style: TextStyle(
-                fontSize: AppSizes.customSizeHeight(context, 0.018),
-                color: AppColors.textBlack,
-              )
+          Text(
+            'S/ 350.00',
+            style: TextStyle(
+              fontSize: AppSizes.customSizeHeight(context, 0.018),
+              color: AppColors.textBlack,
+            ),
           ),
-
-          SizedBox(height: AppSizes.customSizeHeight(context, 0.004)),
-
-          Text('GASTOS: S/150',
-              style: TextStyle(
-                fontSize: AppSizes.customSizeHeight(context, 0.016),
-                color: AppColors.textBlack,
-              )
-          ),
-
-          Text('GASTOS estimados: S/250',
-              style: TextStyle(
-                fontSize: AppSizes.customSizeHeight(context, 0.016),
-                color: AppColors.textBlack,
-              )
-          ),
-
           SizedBox(height: AppSizes.customSizeHeight(context, 0.016)),
-
           Center(
             child: SizedBox(
               width: AppSizes.customSizeHeight(context, 0.2),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, '/edit_budget');
+                },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Editar', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary,),),
+                child: const Text(
+                  'Editar',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ),
           ),
@@ -137,7 +137,8 @@ class _PlanningPageState extends State<PlanningPage> {
     );
   }
 
-  Widget _buildSavingsGoalCard() {
+  Widget _buildSavingsGoalCard(
+      BuildContext context, PresupuestoProvider presupuestoProvider) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.lightPrimary,
@@ -157,50 +158,45 @@ class _PlanningPageState extends State<PlanningPage> {
                   color: AppColors.textBlack,
                 ),
               ),
-
               SizedBox(width: AppSizes.customSizeWidth(context, 0.34)),
-
-              Text('\$ 100.00',
-                  style: TextStyle(
-                    fontSize: AppSizes.customSizeHeight(context, 0.024),
-                    color: AppColors.textBlack,
-                  )
+              Text(
+                'S/ ${presupuestoProvider.presupuesto.metaAhorro}',
+                style: TextStyle(
+                  fontSize: AppSizes.customSizeHeight(context, 0.024),
+                  color: AppColors.textBlack,
+                ),
               ),
             ],
           ),
-
           SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
-
           LinearProgressIndicator(
             value: 0.35,
             minHeight: AppSizes.customSizeHeight(context, 0.01),
             backgroundColor: Colors.grey[300],
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
           ),
-
-          SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
-
-          Text('S/ 350.00',
-            style: TextStyle(
-              fontSize: AppSizes.customSizeHeight(context, 0.016),
-              color: AppColors.textBlack,
-            )
-          ),
-
           SizedBox(height: AppSizes.customSizeHeight(context, 0.016)),
-
           Center(
             child: SizedBox(
               width: AppSizes.customSizeHeight(context, 0.2),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  _showEditGoalDialog(context, presupuestoProvider);
+                },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Ajustar meta', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary,),),
+                child: const Text(
+                  'Ajustar meta',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ),
           ),
@@ -209,7 +205,42 @@ class _PlanningPageState extends State<PlanningPage> {
     );
   }
 
-  Widget _buildSuggestions() {
+  void _showEditGoalDialog(
+      BuildContext context, PresupuestoProvider presupuestoProvider) {
+    final controller = TextEditingController(
+        text: presupuestoProvider.presupuesto.metaAhorro.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar Meta de Ahorro'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'Nueva meta'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newGoal = double.tryParse(controller.text);
+              if (newGoal != null) {
+                presupuestoProvider.actualizarMetaAhorro(newGoal);
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestions(
+      BuildContext context, PresupuestoProvider presupuestoProvider) {
     return Container(
       width: AppSizes.customSizeWidth(context, 1),
       decoration: BoxDecoration(
@@ -230,23 +261,15 @@ class _PlanningPageState extends State<PlanningPage> {
           ),
           SizedBox(height: AppSizes.customSizeHeight(context, 0.008)),
           Text(
-            'Considera reducir el gasto en alimentación',
-              style: TextStyle(
-                fontSize: AppSizes.customSizeHeight(context, 0.016),
-                color: AppColors.textBlack,
-              )
+            presupuestoProvider.presupuesto.sugerencia,
+            style: TextStyle(
+              fontSize: AppSizes.customSizeHeight(context, 0.016),
+              color: AppColors.textBlack,
+            ),
           ),
           SizedBox(height: AppSizes.customSizeHeight(context, 0.016)),
-          Text(
-            'Acción reomendada: Ajustar Presupuesto',
-              style: TextStyle(
-                fontSize: AppSizes.customSizeHeight(context, 0.016),
-                color: AppColors.textBlack,
-              )
-          ),
         ],
       ),
     );
-
   }
 }

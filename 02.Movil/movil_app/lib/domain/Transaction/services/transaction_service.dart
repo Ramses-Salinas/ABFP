@@ -138,11 +138,9 @@ class TransactionService {
     try {
     final List<Map<String, dynamic>> transacciones = await transaccionRepository.obtenerTransacciones(gmail);
     return transacciones.map((transaccion) {
-      // Buscar categoría basada en el nombre.
       final String categoriaNombre = transaccion['categoria_transaccion'] ?? 'Desconocida';
       final Category categoria = CategoryProvider().getCategoryByName(categoriaNombre);
 
-      // Reconstruir los objetos de valor.
       final Fecha fecha = Fecha(DateTime.parse(transaccion['fecha']));
       final Monto monto = Monto((transaccion['monto'] as num).toDouble());
       final TipoMoneda tipoMoneda = TipoMoneda.values.firstWhere(
@@ -154,7 +152,6 @@ class TransactionService {
         orElse: () => TipoTransaccion.Gasto,
       );
 
-      // Crear la transacción reconstruida.
       return Transaction(
         id: transaccion['transaccion_id'],
         gmail: transaccion['gmail'],

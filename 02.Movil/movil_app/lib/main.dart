@@ -1,4 +1,7 @@
+import 'package:financial_app/domain/financial_analysis/services/dashboard_sevice.dart';
+import 'package:financial_app/infrastructure/graphql/graphql_dashboard_repository.dart';
 import 'package:financial_app/presentation/pages/dashboard_page.dart';
+import 'package:financial_app/presentation/pages/edit_budget.dart';
 import 'package:financial_app/presentation/pages/planificaction_page.dart';
 import 'package:financial_app/presentation/pages/register_page.dart';
 import 'package:financial_app/presentation/pages/settings_page.dart';
@@ -9,13 +12,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'application/providers/account_provider.dart';
 import 'application/providers/category_provider.dart';
+import 'application/providers/dashboard_provider.dart';
+import 'application/providers/planning_provider.dart';
 import 'application/providers/transaction_provider.dart';
 import 'application/providers/user_provider.dart';
 import 'domain/Transaction/entities/transaction.dart';
 import 'domain/Transaction/services/transaction_service.dart';
-import 'domain/Transaction/services/user_service.dart';
+import 'domain/financial_planning/services/planning_service.dart';
+import 'domain/user_management/services/user_service.dart';
 import 'domain/user_management/entities/account.dart';
 import 'infrastructure/graphql/graphql_client.dart';
+import 'infrastructure/graphql/graphql_planning_repository.dart';
 import 'infrastructure/graphql/graphql_transaction_repository.dart';
 import 'infrastructure/graphql/graphql_user_repository.dart';
 import 'presentation/pages/login_page.dart';
@@ -30,9 +37,17 @@ void main() {
   final userService = UserService(
     userRepository: GraphQLUserRepository(client: myGraphQLClient),
   );
+  final dashboardService = DashboardService(
+    dashboardRepository: GraphQLDashboardRepository(client: myGraphQLClient),
+  );
+  final presupuestoService = PlanningService(
+    planningRepository: GraphQLPlanningRepository(client: myGraphQLClient),
+  );
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => PresupuestoProvider(planningService: presupuestoService)),
+        ChangeNotifierProvider(create: (_) => DashboardProvider(dashboardService: dashboardService)),
         ChangeNotifierProvider(create: (context) => UserProvider(userService:userService)),
         ChangeNotifierProxyProvider<UserProvider, TransactionProvider>(
           create: (context) => TransactionProvider(
@@ -71,7 +86,7 @@ class FinancialWellnessApp extends StatelessWidget {
           case '/register':
             return MaterialPageRoute(builder: (context) => const RegisterPage());
           case '/home':
-            return MaterialPageRoute(builder: (context) => HomePage());
+            return MaterialPageRoute(builder: (context) => const HomePage());
           case '/transaction_add':
             return PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) {return const TransactionAddPage();},
@@ -89,8 +104,10 @@ class FinancialWellnessApp extends StatelessWidget {
             );
           case '/planning':
             return MaterialPageRoute(builder: (context) => const PlanningPage());
+          case '/edit_budget':
+            return MaterialPageRoute(builder: (context) => EditBudgetScreen());
           case '/dashboard':
-            //return MaterialPageRoute(builder: (context) => DashboardPage());
+            return MaterialPageRoute(builder: (context) => DashboardPage());
           case '/settings':
             return MaterialPageRoute(builder: (context) => SettingsPage());
           default:

@@ -1,7 +1,7 @@
 
 import 'package:financial_app/infrastructure/repositories/user_repository.dart';
 
-import '../../user_management/entities/user.dart';
+import '../entities/user.dart';
 
 class UserService {
   final UserRepository userRepository;

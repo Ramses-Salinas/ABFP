@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 
-import '../themes/app_colors.dart';
+import '../../application/providers/dashboard_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
-/*
+import '../widgets/dashboard_widgets.dart';
+
 class DashboardPage extends StatefulWidget {
+  const DashboardPage({Key? key}) : super(key: key);
+
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
+  _DashboardPageState createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<DashboardPage> {
@@ -19,96 +22,124 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  final List<String> tiposDashboard = [
+    "Presupuesto vs Gasto Actual",
+    "Gasto Mensual",
+    "Ahorro vs Objetivo",
+  ];
+
+  String tipoSeleccionado = "Presupuesto vs Gasto Actual";
+
+  @override
+  void initState() {
+    super.initState();
+    cargarDashboard();
+  }
+
+  void cargarDashboard() {
+    final provider = Provider.of<DashboardProvider>(context, listen: false);
+    provider.cargarDashboard(tipoSeleccionado);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<DashboardProvider>(context);
+
+    if (provider.isLoading) {
+      return Scaffold(
+        body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: CustomBottomNavBar(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),);
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('Dashboard',style: Theme.of(context).textTheme.displayLarge,)),
-        backgroundColor: AppColors.backgroundColor,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DropdownButton<String>(
-              hint: const Text('Presupuesto', style: TextStyle(color: AppColors.textSecondary)),
-              items: <String>['Presupuesto', 'Gasto Mensual', 'Resumen General']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value, style: const TextStyle(color: AppColors.textPrimary)),
-                );
-              }).toList(),
-              onChanged: (String? value) {},
-              dropdownColor: AppColors.secondary,
-            ),
-            SizedBox(height: 20),
-            const Text('Presupuesto vs Gasto Actual', style: TextStyle(color: AppColors.textPrimary, fontSize: 20)),
-            SizedBox(height: 10),
-            Container(
-              height: 250,
-              child: BarChart(
-                BarChartData(
-                  titlesData: FlTitlesData(
-                    leftTitles: SideTitles(showTitles: true),
-                    bottomTitles: SideTitles(showTitles: true, reservedSize: 38),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    BarChartGroupData(x: 0, barRods: [
-                      BarChartRodData(
-                        y: 300,
-                        colors: [Colors.greenAccent],
-                      ),
-                      BarChartRodData(
-                        y: 500,
-                        colors: [Colors.redAccent],
-                      ),
-                    ]),
-                    BarChartGroupData(x: 1, barRods: [
-                      BarChartRodData(
-                        y: 200,
-                        colors: [Colors.greenAccent],
-                      ),
-                      BarChartRodData(
-                        y: 400,
-                        colors: [Colors.redAccent],
-                      ),
-                    ]),
-                    BarChartGroupData(x: 2, barRods: [
-                      BarChartRodData(
-                        y: 500,
-                        colors: [Colors.greenAccent],
-                      ),
-                      BarChartRodData(
-                        y: 600,
-                        colors: [Colors.redAccent],
-                      ),
-                    ]),
-                    BarChartGroupData(x: 3, barRods: [
-                      BarChartRodData(
-                        y: 150,
-                        colors: [Colors.greenAccent],
-                      ),
-                      BarChartRodData(
-                        y: 300,
-                        colors: [Colors.redAccent],
-                      ),
-                    ]),
-                  ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                DropdownButton<String>(
+                  value: tipoSeleccionado,
+                  items: tiposDashboard.map((tipo) {
+                    return DropdownMenuItem<String>(
+                      value: tipo,
+                      child: Text(tipo),
+                    );
+                  }).toList(),
+                  onChanged: (nuevoTipo) {
+                    setState(() {
+                      tipoSeleccionado = nuevoTipo!;
+                    });
+                    cargarDashboard();
+                  },
                 ),
-              ),
+                const SizedBox(height: 16),
+
+
+                if (provider.dashboard != null) ...[
+                  Text(
+                    provider.dashboard.tipo,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    provider.dashboard.descripcion,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                if (tipoSeleccionado == "Presupuesto vs Gasto Actual") ...[
+                  SizedBox(
+                    height: 400,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: GraficaBarraGeneral(
+                        datos: provider.dashboard.inputs['categorias'],
+                        claves: const ['presupuesto', 'gasto'],
+                        colores: const [Color(0xFF42A5F5), Color(0xFFEF5350)],
+                      )
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ...provider.dashboard.inputs['categorias']
+                      .map<Widget>((categoria) {
+                    final progreso =
+                        categoria['gasto'] / categoria['presupuesto'];
+                    return BarraProgreso(
+                      progreso: progreso,
+                      label:
+                      "${categoria['nombre']} - ${categoria['gasto']} / ${categoria['presupuesto']}",
+                    );
+                  }).toList(),
+                ] else if (tipoSeleccionado == "Gasto Mensual") ...[
+                  SizedBox(
+                    height: 400,
+                    child: GraficaGastoMensualConSelector(
+                      datosPorMes: provider.dashboard.inputs['meses'],
+                      colorIngreso: const Color(0xFF42A5F5),
+                      colorGasto: const Color(0xFFEF5350),
+                    ),
+                  ),
+
+                ] else if (tipoSeleccionado == "Ahorro vs Objetivo") ...[
+                  SizedBox(
+                    height: 200,
+                    child: IndicadorAhorro(
+                      progreso: provider.dashboard.inputs['saldoActual'] /
+                          provider.dashboard.inputs['meta'],
+                    ),
+                  ),
+                ],
+              ],
             ),
-            SizedBox(height: 20),
-            Text('Gastos por categoría', style: TextStyle(color: AppColors.textPrimary, fontSize: 20)),
-            SizedBox(height: 10),
-            expenseCategory('Alimentación', 50, 100),
-            expenseCategory('Vestuario', 50, 100),
-            expenseCategory('Deporte', 50, 100),
-            expenseCategory('Medicina', 50, 100),
-            expenseCategory('Otros', 50, 100),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: CustomBottomNavBar(
@@ -118,37 +149,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget expenseCategory(String title, double spent, double total) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('$title', style: TextStyle(color: AppColors.textPrimary)),
-        SizedBox(height: 5),
-        Container(
-          height: 10,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.lightPrimary,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: FractionallySizedBox(
-            widthFactor: spent / total,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 5),
-        Text('S/ $spent / S/ $total', style: TextStyle(color: AppColors.textSecondary)),
-        SizedBox(height: 15),
-      ],
-    );
-  }
 }
-
- */
 
 

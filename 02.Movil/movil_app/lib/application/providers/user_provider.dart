@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/Transaction/services/user_service.dart';
+import '../../domain/user_management/services/user_service.dart';
 import '../../domain/user_management/entities/user.dart';
 
 
