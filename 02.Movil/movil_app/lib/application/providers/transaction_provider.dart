@@ -12,7 +12,7 @@ class TransactionProvider with ChangeNotifier {
   final transactionRegister= TransactionRegister();
   final TransactionService transactionService;
   final UserProvider userProvider;
-
+  int _lastGeneratedId = 0;
 
   bool get isLoading => _isLoading;
 
@@ -53,6 +53,7 @@ class TransactionProvider with ChangeNotifier {
   }
 
   Future<void> addTransaction({
+
     required double amount,
     required int categoryId,
     required String categoryName,
@@ -63,14 +64,15 @@ class TransactionProvider with ChangeNotifier {
     required String currencyType,
     required String transactionType,
   }) async {
-    int newId = (DateTime.now().millisecondsSinceEpoch ~/ 100000).toInt();
+
+    int timestamp =  (DateTime.now().millisecondsSinceEpoch ~/ 100000).toInt();
+    int newId = timestamp + (++_lastGeneratedId);
     final String? gmail = userProvider.currentGmail;
 
     if (gmail == null) {
       print("Usuario no autenticado. No se puede agregar transacciones.");
       return;
     }
-
 
     final newTransaction = transactionService.crearTransaccion(
       id: newId,

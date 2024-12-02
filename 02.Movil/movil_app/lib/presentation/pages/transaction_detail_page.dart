@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../application/providers/category_provider.dart';
+import '../../application/providers/planning_provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../../domain/Transaction/entities/category.dart';
 import '../../domain/Transaction/entities/transaction.dart';
 import '../../application/providers/transaction_provider.dart';
@@ -50,7 +52,7 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
     });
   }
 
-  void _updateTransaction() {
+  Future<void> _updateTransaction() async {
     final updatedTransaction = Transaction(
       id: widget.transaction.id,
       gmail: widget.transaction.gmail,
@@ -62,9 +64,33 @@ class _TransactionDetailState extends State<TransactionDetailPage> {
       tipoTransaccion: _tipoTransaccion,
     );
 
+    final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final planningProvider = Provider.of<PlanningProvider>(context, listen: false);
+    var saldo =  planningProvider.presupuesto.balance;
+    double monto = Monto(double.parse(_amountController.text)).value;
+    var newBalance = double.parse(_amountController.text);
+    if(_tipoTransaccion.name=="Gasto") {
+      newBalance *= -1;
+    }
+    final oldTransaction = widget.transaction;
 
-    Provider.of<TransactionProvider>(context, listen: false)
-        .updateTransaction(updatedTransaction);
+    saldo -= oldTransaction.tipoTransaccion == TipoTransaccion.Ingreso
+        ? oldTransaction.monto.value
+        : -oldTransaction.monto.value;
+
+    saldo += _tipoTransaccion == TipoTransaccion.Ingreso
+        ? monto
+        : -monto;
+
+    await transactionProvider.updateTransaction(updatedTransaction);
+
+    newBalance = saldo;
+
+    if(newBalance!= planningProvider.presupuesto.balance){
+      await planningProvider.actualizarBalance(userProvider.currentUser!.gmail, newBalance);
+
+    }
 
     Navigator.pop(context);
   }

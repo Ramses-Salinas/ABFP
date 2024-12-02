@@ -34,7 +34,9 @@ class PlanningService {
   }
 
 
-
+  Future<void> actualizarBalance(String gmail, double nuevoBalance) async {
+    await planningRepository.actualizarBalance(gmail, nuevoBalance);
+  }
   Future<void> actualizarMetaAhorro(String gmail, double nuevaMeta) async {
     await planningRepository.actualizarMetaAhorro(gmail, nuevaMeta);
   }

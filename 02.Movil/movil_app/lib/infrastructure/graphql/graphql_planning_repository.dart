@@ -385,6 +385,58 @@ class GraphQLPlanningRepository implements PlanningRepository {
   }
 
 
+  @override
+  Future<void> actualizarBalance(String gmail, double nuevoBalance) async {
+    const mutation = '''
+    mutation ActualizarPresupuesto(
+      \$Gmail: String!,
+      \$Tipo_presupuesto: String!,
+      \$Balanza_actual_real: Int,
+    ) {
+      actualizarPresupuesto(
+        Gmail: \$Gmail,
+        Tipo_presupuesto: \$Tipo_presupuesto,
+        Balanza_actual_real: \$Balanza_actual_real,
+
+      ) {
+        Tipo_presupuesto
+      }
+    }
+    ''';
+
+
+    final variables = {
+      'Gmail': gmail,
+      'Tipo_presupuesto': "Mensual",
+      'Balanza_actual_real': nuevoBalance.toInt(),
+
+    };
+
+    try {
+      final MutationOptions options = MutationOptions(
+        document: gql(mutation),
+        variables: variables,
+      );
+
+      final QueryResult result = await client.mutate(options);
+
+      if (result.hasException) {
+        print('Error al actualizar el Presupuesto: ${result.exception.toString()}');
+      } else if (result.data != null) {
+        print('Presupuesto actualizado exitosamente con ID: ${result.data!['actualizarPresupuesto']['Tipo_presupuesto']}');
+
+        // Limpiar caché después de la mutación
+        _clearCache();
+
+        // Refrescar los datos después de la mutación
+        await _refetchPresupuesto(gmail);
+      } else {
+        print('Error desconocido. Sin datos ni excepciones.');
+      }
+    } catch (e) {
+      print('Error al enviar la solicitud de actualización: $e');
+    }
+  }
 
   @override
   Future<void> eliminarTransaccion(String gmail, int id) async {

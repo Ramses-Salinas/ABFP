@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../application/providers/category_provider.dart';
+import '../../application/providers/planning_provider.dart';
 import '../../application/providers/transaction_provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../../domain/Transaction/entities/category.dart';
 import '../../infrastructure/graphql/graphql_client.dart';
 import '../themes/app_sizes.dart';
@@ -51,48 +53,10 @@ class _TransactionDetailState extends State<TransactionAddPage> {
   }
 
   Future<void> _addTransaction() async {
-    /*
-    final newTransaction = Transaction(
-      id: 4,
-      fecha: Fecha(_selectedDate),
-      monto: Monto(double.parse(_amountController.text)),
-      categoria: _selectedCategory ?? Category(
-        id: 1, //Debe crearse en la base de datos
-        nombre: NombreCategoria('Desconocida'),
-        icono: IconoCategoria(Icons.help),
-        color: ColorCategoria(Colors.grey),
-      ),
-      nota: _noteController.text,
-      tipoMoneda: _tipoMoneda,
-      tipoTransaccion: _tipoTransaccion,
-    );
-
-
-    Provider.of<TransactionProvider>(context, listen: false)
-        .addTransaction(newTransaction);
-     */
 
     if (_selectedCategory == null) return;
 
-    // Llamamos al TransactionProvider
-    /*
-    Provider.of<TransactionProvider>(context, listen: false).addTransaction(
-      amount: double.parse(_amountController.text),
-      categoryId: _selectedCategory!.id,
-      categoryName: _selectedCategory!.nombre.value,
-      categoryIcon: _selectedCategory!.icono.value,
-      categoryColor: _selectedCategory!.color.value,
-      note: _noteController.text,
-      date: _selectedDate,
-      currencyType: _selectedCurrencyType,
-      transactionType:  _selectedTransactionType,
-    );
-
-     */
-
-
     try {
-      //await transactionService.registrarTransaccion(transaction);
       await Provider.of<TransactionProvider>(context, listen: false).addTransaction(
         amount: double.parse(_amountController.text),
         categoryId: _selectedCategory!.id,
@@ -104,6 +68,18 @@ class _TransactionDetailState extends State<TransactionAddPage> {
         currencyType: _selectedCurrencyType,
         transactionType:  _selectedTransactionType,
       );
+
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final planningProvider = Provider.of<PlanningProvider>(context, listen: false);
+      var newBalance = double.parse(_amountController.text);
+      if(_selectedTransactionType=="Gasto") {
+        newBalance *= -1;
+      }
+
+      newBalance += planningProvider.presupuesto.balance;
+
+      await planningProvider.actualizarBalance(userProvider.currentUser!.gmail, newBalance);
+
       print('Transacción registrada con éxito');
     } catch (e) {
       print('Error al registrar transacción: $e');

@@ -63,6 +63,13 @@ class PlanningProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> actualizarBalance(String gmail,double newBalance) async{
+
+    await planningService.actualizarBalance(gmail, newBalance);
+    _presupuesto.balance = newBalance;
+    notifyListeners();
+  }
+
   Future<void> actualizarMetaAhorro(String gmail,double newGoal) async{
 
     await planningService.actualizarMetaAhorro(gmail, newGoal);
