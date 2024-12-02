@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../application/providers/planning_provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../themes/app_sizes.dart';
 
 class EditBudgetScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class EditBudgetScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final presupuestoProvider = Provider.of<PresupuestoProvider>(context);
+    final presupuestoProvider = Provider.of<PlanningProvider>(context);
     final presupuestoPorCategoria = presupuestoProvider.presupuesto.presupuestoPorCategoria;
 
     return Scaffold(
@@ -40,43 +41,7 @@ class EditBudgetScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /*
-              // Presupuesto Mensual
-              Container(
-                padding: EdgeInsets.all(AppSizes.mediumSpace(context)),
-                decoration: BoxDecoration(
-                  color: AppColors.lightPrimary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Presupuesto Mensual',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'S/ ',
-                          style: TextStyle(color: Colors.black, fontSize: 16),
-                        ),
-                        const Text(
-                          '500.00',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(width: AppSizes.smallWidthSpace(context)),
-                        const Icon(Icons.edit, color: Colors.black),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppSizes.largeSpace(context)),
-               */
+
               // Planificación financiera
               Container(
                 padding: EdgeInsets.all(AppSizes.mediumSpace(context)),
@@ -180,7 +145,7 @@ class EditBudgetScreen extends StatelessWidget {
   }
 
   Widget _buildPlanningButton(BuildContext context, String title) {
-    final presupuestoProvider = Provider.of<PresupuestoProvider>(context);
+    final presupuestoProvider = Provider.of<PlanningProvider>(context);
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSizes.smallSpace(context)),
@@ -207,7 +172,7 @@ class EditBudgetScreen extends StatelessWidget {
       BuildContext context,
       String category,
       double value,
-      PresupuestoProvider provider,
+      PlanningProvider provider,
       ) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSizes.smallSpace(context)),
@@ -257,7 +222,7 @@ class EditBudgetScreen extends StatelessWidget {
     );
   }
 
-  void _showAddCategoryDialog(BuildContext context, PresupuestoProvider provider) {
+  void _showAddCategoryDialog(BuildContext context, PlanningProvider provider) {
     final categoryController = TextEditingController();
     final amountController = TextEditingController();
 
@@ -302,7 +267,7 @@ class EditBudgetScreen extends StatelessWidget {
   }
 
   void _showEditGoalDialog(
-      BuildContext context, PresupuestoProvider presupuestoProvider, String title) {
+      BuildContext context, PlanningProvider presupuestoProvider, String title) {
 
     String initialValue = '';
     String dialogTitle = '';
@@ -323,6 +288,16 @@ class EditBudgetScreen extends StatelessWidget {
 
     final controller = TextEditingController(text: initialValue);
 
+    Future<void> updateBudget() async {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final planningProvider = Provider.of<PlanningProvider>(context, listen: false);
+      final newBudget = double.tryParse(controller.text);
+      if (newBudget != null) {
+        await planningProvider.actualizarPresupuestoPlazo(userProvider.currentUser!.gmail, newBudget, title);
+        Navigator.of(context).pop();
+      }
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -338,13 +313,8 @@ class EditBudgetScreen extends StatelessWidget {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              final newGoal = double.tryParse(controller.text);
-              if (newGoal != null) {
-                presupuestoProvider.actualizarPresupuestoPlazo(newGoal,title);
-                Navigator.of(context).pop();
-              }
-            },
+            onPressed: updateBudget,
+
             child: const Text('Guardar'),
           ),
         ],

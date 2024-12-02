@@ -1,44 +1,48 @@
+import 'package:financial_app/application/providers/user_provider.dart';
 import 'package:financial_app/domain/financial_planning/services/planning_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/financial_planning/entities/presupuesto.dart';
 
-class PresupuestoProvider with ChangeNotifier {
-  late Presupuesto _presupuesto = Presupuesto(
-    presupuestoMensual: 0,
-    presupuestoSemestral: 0,
-    presupuestoAnual: 0,
-    presupuestoPorCategoria: {},
-    metaAhorro: 0,
-    sugerencia: '',
-  );
+class PlanningProvider with ChangeNotifier {
+  late Presupuesto _presupuesto;
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
   Presupuesto get presupuesto => _presupuesto;
   final PlanningService planningService;
+  final UserProvider userProvider;
 
-  PresupuestoProvider({required this.planningService}) {
+  PlanningProvider({required this.planningService, required this.userProvider}) {
     cargarPresupuesto();
   }
 
   Future<void> cargarPresupuesto() async {
     _isLoading = true;
-    final presupuesto = await planningService.obtenerPresupuesto();
+
+    final String? gmail = userProvider.currentGmail;
+    final presupuesto = await planningService.obtenerPresupuesto(gmail!);
 
     _presupuesto = presupuesto;
     _isLoading = false;
     notifyListeners();
   }
 
-  void actualizarPresupuesto({
+  Future<void> crearPresupuesto(String gmail) async {
+
+    await planningService.crearPresupuesto(gmail);
+
+    notifyListeners();
+  }
+
+  Future<void> actualizarPresupuesto({
     double? mensual,
     double? semestral,
     double? anual,
     Map<String, double>? porCategoria,
     double? meta,
     String? sugerencia,
-  }) {
+  }) async {
     if (mensual != null) _presupuesto.presupuestoMensual = mensual;
     if (semestral != null) _presupuesto.presupuestoSemestral = semestral;
     if (anual != null) _presupuesto.presupuestoAnual = anual;
@@ -59,16 +63,20 @@ class PresupuestoProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void actualizarMetaAhorro(double newGoal) {
+  Future<void> actualizarMetaAhorro(String gmail,double newGoal) async{
 
-    _presupuesto.metaAhorro = newGoal;
+    await planningService.actualizarMetaAhorro(gmail, newGoal);
+     _presupuesto.metaAhorro = newGoal;
     notifyListeners();
   }
 
-  void actualizarPresupuestoPlazo(double newBudget, String plazo) {
+  Future<void> actualizarPresupuestoPlazo(String gmail, double newBudget, String plazo) async {
+
+    await planningService.actualizarPresupuestoPlazo(gmail, newBudget, plazo);
 
     switch(plazo){
       case "Corto plazo":
+
         _presupuesto.presupuestoMensual = newBudget;
         break;
       case "Mediano plazo":
@@ -81,5 +89,7 @@ class PresupuestoProvider with ChangeNotifier {
 
     notifyListeners();
   }
+
+
   
 }

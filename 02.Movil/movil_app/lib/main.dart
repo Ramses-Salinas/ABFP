@@ -40,15 +40,24 @@ void main() {
   final dashboardService = DashboardService(
     dashboardRepository: GraphQLDashboardRepository(client: myGraphQLClient),
   );
-  final presupuestoService = PlanningService(
+  final planningService = PlanningService(
     planningRepository: GraphQLPlanningRepository(client: myGraphQLClient),
   );
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => PresupuestoProvider(planningService: presupuestoService)),
         ChangeNotifierProvider(create: (_) => DashboardProvider(dashboardService: dashboardService)),
         ChangeNotifierProvider(create: (context) => UserProvider(userService:userService)),
+        ChangeNotifierProxyProvider<UserProvider, PlanningProvider>(
+          create: (context) => PlanningProvider(
+            planningService: planningService,
+            userProvider: Provider.of<UserProvider>(context, listen: false),
+          ),
+          update: (context, userProvider, previousPlanningProvider) => PlanningProvider(
+            planningService: previousPlanningProvider!.planningService,
+            userProvider: userProvider,
+          ),
+        ),
         ChangeNotifierProxyProvider<UserProvider, TransactionProvider>(
           create: (context) => TransactionProvider(
             transactionService: transactionService,
@@ -105,9 +114,9 @@ class FinancialWellnessApp extends StatelessWidget {
           case '/planning':
             return MaterialPageRoute(builder: (context) => const PlanningPage());
           case '/edit_budget':
-            return MaterialPageRoute(builder: (context) => EditBudgetScreen());
+            return MaterialPageRoute(builder: (context) => const EditBudgetScreen());
           case '/dashboard':
-            return MaterialPageRoute(builder: (context) => DashboardPage());
+            return MaterialPageRoute(builder: (context) => const DashboardPage());
           case '/settings':
             return MaterialPageRoute(builder: (context) => SettingsPage());
           default:

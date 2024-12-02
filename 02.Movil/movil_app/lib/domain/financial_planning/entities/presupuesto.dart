@@ -1,5 +1,6 @@
 
 class Presupuesto {
+  double balance;
   double presupuestoMensual;
   double presupuestoSemestral;
   double presupuestoAnual;
@@ -8,6 +9,7 @@ class Presupuesto {
   String sugerencia;
 
   Presupuesto({
+    required this.balance,
     required this.presupuestoMensual,
     required this.presupuestoSemestral,
     required this.presupuestoAnual,

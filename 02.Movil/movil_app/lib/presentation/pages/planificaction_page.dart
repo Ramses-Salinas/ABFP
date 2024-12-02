@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../application/providers/planning_provider.dart';
+import '../../application/providers/user_provider.dart';
 import '../themes/app_colors.dart';
 import '../themes/app_sizes.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
@@ -15,6 +16,7 @@ class PlanningPage extends StatefulWidget {
 
 class _PlanningPageState extends State<PlanningPage> {
   int _selectedIndex = 1;
+  late TextEditingController controller = TextEditingController();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -22,9 +24,19 @@ class _PlanningPageState extends State<PlanningPage> {
     });
   }
 
+  Future<void> updateGoal() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final planningProvider = Provider.of<PlanningProvider>(context, listen: false);
+    final newGoal = double.tryParse(controller.text);
+    if (newGoal != null) {
+      await planningProvider.actualizarMetaAhorro(userProvider.currentUser!.gmail, newGoal);
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final presupuestoProvider = Provider.of<PresupuestoProvider>(context);
+    final presupuestoProvider = Provider.of<PlanningProvider>(context);
 
     if (presupuestoProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -62,7 +74,7 @@ class _PlanningPageState extends State<PlanningPage> {
   }
 
   Widget _buildBudgetCard(
-      BuildContext context, PresupuestoProvider presupuestoProvider) {
+      BuildContext context, PlanningProvider presupuestoProvider) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.lightPrimary,
@@ -138,7 +150,7 @@ class _PlanningPageState extends State<PlanningPage> {
   }
 
   Widget _buildSavingsGoalCard(
-      BuildContext context, PresupuestoProvider presupuestoProvider) {
+      BuildContext context, PlanningProvider presupuestoProvider) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.lightPrimary,
@@ -206,9 +218,8 @@ class _PlanningPageState extends State<PlanningPage> {
   }
 
   void _showEditGoalDialog(
-      BuildContext context, PresupuestoProvider presupuestoProvider) {
-    final controller = TextEditingController(
-        text: presupuestoProvider.presupuesto.metaAhorro.toString());
+      BuildContext context, PlanningProvider presupuestoProvider) {
+
 
     showDialog(
       context: context,
@@ -225,13 +236,7 @@ class _PlanningPageState extends State<PlanningPage> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              final newGoal = double.tryParse(controller.text);
-              if (newGoal != null) {
-                presupuestoProvider.actualizarMetaAhorro(newGoal);
-                Navigator.of(context).pop();
-              }
-            },
+            onPressed: updateGoal,
             child: const Text('Guardar'),
           ),
         ],
@@ -240,7 +245,7 @@ class _PlanningPageState extends State<PlanningPage> {
   }
 
   Widget _buildSuggestions(
-      BuildContext context, PresupuestoProvider presupuestoProvider) {
+      BuildContext context, PlanningProvider presupuestoProvider) {
     return Container(
       width: AppSizes.customSizeWidth(context, 1),
       decoration: BoxDecoration(

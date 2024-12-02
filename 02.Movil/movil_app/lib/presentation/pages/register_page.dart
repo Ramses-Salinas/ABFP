@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../application/providers/planning_provider.dart';
 import '../../application/providers/user_provider.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/input_field.dart';
@@ -42,17 +43,18 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final planningProvider = Provider.of<PlanningProvider>(context, listen: false);
+
     try {
-      print("Datos enviados:");
-      print("Nombre: $name");
-      print("Email: $gmail");
-      print("Password: $password");
 
       await userProvider.addUser(
         gmail: gmail,
         name: name,
         password: password,
       );
+
+      await planningProvider.crearPresupuesto(gmail);
+
       print('Usuario registrado con éxito');
     } catch (e) {
       print('Error al registrar el usuario: $e');

@@ -40,7 +40,6 @@ class UserProvider with ChangeNotifier {
     );
 
     await userService.registrarUsuario(newUser);
-
     loadUser(gmail);
 
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../application/providers/account_provider.dart';
+import '../../application/providers/planning_provider.dart';
 import '../../application/providers/user_provider.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_buttons.dart';
@@ -28,11 +29,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
 
-    final accountProvider = Provider.of<AccountProvider>(context);
+    final planningProvider = Provider.of<PlanningProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
     final userName = userProvider.currentUser?.nombre ?? "Usuario";
 
-    if (userProvider.isLoading) {
+    if (userProvider.isLoading || planningProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               width: AppSizes.customSizeWidth(context, 0.6),
                               child: Text(
-                                "S/${accountProvider.saldo}",
+                                "S/${planningProvider.presupuesto.balance}",
                                 style: const TextStyle(color: AppColors.textPrimary, fontSize: 40, fontWeight: FontWeight.bold),
                               ),
                             ),

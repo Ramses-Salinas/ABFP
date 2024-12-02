@@ -1,7 +1,4 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:intl/intl.dart';
-
-import '../../domain/Transaction/entities/transaction.dart';
 import '../repositories/planning_respository.dart';
 
 class GraphQLPlanningRepository implements PlanningRepository {
@@ -13,18 +10,14 @@ class GraphQLPlanningRepository implements PlanningRepository {
     client.cache.store.reset();
   }
 
-  Future<List<Map<String, dynamic>>> _refetchTransacciones(String gmail) async {
+  Future<Map<String, dynamic>> _refetchPresupuesto(String gmail) async {
     const query = '''
-    query listTransacciones(\$gmail: String!) {
-      listTransacciones(gmail: \$gmail) {
-        gmail
-        transaccion_id
-        categoria_transaccion
-        fecha
-        monto
-        nota
-        tipo_moneda
-        tipo_transaccion
+    query ListPresupuesto(\$gmail: String!) {
+      listpresupuesto(gmail: \$gmail) {
+        Gmail
+        Meta_ahorro
+        Balanza_actual_real
+        Sugerencia
       }
     }
     ''';
@@ -41,13 +34,13 @@ class GraphQLPlanningRepository implements PlanningRepository {
       final QueryResult result = await client.query(options);
 
       if (result.hasException) {
-        throw Exception('Error al obtener transacciones: ${result.exception.toString()}');
+        throw Exception('Error al obtener el presupuesto: ${result.exception.toString()}');
       } else if (result.data != null) {
-        final List<Map<String, dynamic>> transacciones =
-        (result.data?['listTransacciones'] as List<dynamic>)
-            .map((item) => Map<String, dynamic>.from(item))
-            .toList();
-        return transacciones;
+        print("presupuesto:${result.data}");
+        final List<dynamic> presupuestoList = result.data!['listpresupuesto'];
+        final Map<String, dynamic> presupuestoData = presupuestoList.first as Map<String, dynamic>;
+        print("Presupuesto obtenido: $presupuestoData");
+        return presupuestoData;
       } else {
         throw Exception('Error desconocido. Sin datos ni excepciones.');
       }
@@ -56,45 +49,98 @@ class GraphQLPlanningRepository implements PlanningRepository {
     }
   }
 
-  @override
-  Future<void> crearTransaccion(Transaction transaction) async {
-    const mutation = '''
-    mutation CrearTransaccion(
-      \$gmail: String!,
-      \$transaccion_id: Int!,
-      \$categoria_transaccion: String,
-      \$fecha: String,
-      \$monto: Float,
-      \$nota: String,
-      \$tipo_moneda: String,
-      \$tipo_transaccion: String
-    ) {
-      crearTransaccion(
-        gmail: \$gmail,
-        transaccion_id: \$transaccion_id,
-        categoria_transaccion: \$categoria_transaccion,
-        fecha: \$fecha,
-        monto: \$monto,
-        nota: \$nota,
-        tipo_moneda: \$tipo_moneda,
-        tipo_transaccion: \$tipo_transaccion
-      ) {
-        transaccion_id
+  Future<Map<String, dynamic>> _refetchPreCat(String gmail) async {
+    const query = '''
+    query ListPresCat(\$Gmail: String!, \$Id_categoria: Int) {
+      listPrecat(Gmail: \$Gmail, Id_categoria: \$Id_categoria) {
+        Gmail
+        Id_categoria
+        Categoria_mensual
+        Categoria_semestral
+        Categoria_anual
       }
     }
     ''';
 
-    final formattedDate = DateFormat('yyyy-MM-dd').format(transaction.fecha.value);
+    final variables = {'Gmail': gmail, 'Id_categoria': 0,};
+
+    try {
+      final QueryOptions options = QueryOptions(
+        document: gql(query),
+        variables: variables,
+        fetchPolicy: FetchPolicy.networkOnly,
+      );
+
+      final QueryResult result = await client.query(options);
+
+      if (result.hasException) {
+        throw Exception('Error al obtener el precat: ${result.exception.toString()}');
+      } else if (result.data != null) {
+        print("precat:${result.data}");
+        final List<dynamic> precatList = result.data!['listPrecat'];
+        final Map<String, dynamic> precatData = precatList
+            .cast<Map<String, dynamic>>()
+            .firstWhere(
+              (item) => item['Id_categoria'] == 0,
+          orElse: () => throw Exception('No se encontró el precat con Id_categoria: 0'),
+        );        print("Precat obtenido: $precatData");
+        return precatData;
+      } else {
+        throw Exception('Error desconocido. Sin datos ni excepciones.');
+      }
+    } catch (e) {
+      throw Exception('Error al ejecutar el query: $e');
+    }
+  }
+
+
+  @override
+  Future<void> crearPresupuesto(String gmail) async {
+    const mutation = '''
+    mutation CrearPresupuesto(
+      \$Gmail: String!,
+      \$Tipo_presupuesto: String!,
+      \$Gasto_estimado: Int,
+      \$Meta_ahorro: Int,
+      \$Monto_presupuesto: Int,
+      \$Sugerencia: String,
+      \$Ingreso_Presupuestado: Int,
+      \$Ingreso_realMes: Int,
+      \$Gasto_Presupuestado: Int,
+      \$Balanza_final_presupuestadaMes: Int,
+      \$Balanza_actual_real: Int,
+    ) {
+      crearPresupuesto(
+        Gmail: \$Gmail,
+        Tipo_presupuesto: \$Tipo_presupuesto,
+        Gasto_estimado: \$Gasto_estimado,
+        Meta_ahorro: \$Meta_ahorro,
+        Monto_presupuesto: \$Monto_presupuesto,
+        Sugerencia: \$Sugerencia,
+        Ingreso_Presupuestado: \$Ingreso_Presupuestado,
+        Ingreso_realMes: \$Ingreso_realMes,
+        Gasto_Presupuestado: \$Gasto_Presupuestado,
+        Balanza_final_presupuestadaMes: \$Balanza_final_presupuestadaMes,
+        Balanza_actual_real: \$Balanza_actual_real,
+      ) {
+        Tipo_presupuesto
+      }
+    }
+    ''';
+
 
     final variables = {
-      'gmail': transaction.gmail,
-      'transaccion_id': transaction.id.toInt(),
-      'categoria_transaccion': transaction.categoria.nombre.value,
-      'fecha': formattedDate.toString(),
-      'monto': transaction.monto.value,
-      'nota': transaction.nota!.isEmpty ? "--" : transaction.nota,
-      'tipo_moneda': transaction.tipoMoneda.name ,
-      'tipo_transaccion': transaction.tipoTransaccion.name,
+      'Gmail': gmail,
+      'Tipo_presupuesto': "Mensual",
+      'Gasto_estimado': 0,
+      'Meta_ahorro': 0,
+      'Monto_presupuesto': 0,
+      'Sugerencia': "",
+      'Ingreso_Presupuestado': 0,
+      'Ingreso_realMes': 0,
+      'Gasto_Presupuestado': 0,
+      'Balanza_final_presupuestadaMes': 0,
+      'Balanza_actual_real': 0,
     };
 
     try {
@@ -106,62 +152,56 @@ class GraphQLPlanningRepository implements PlanningRepository {
       final QueryResult result = await client.mutate(options);
 
       if (result.hasException) {
-        print('Error en la transacción: ${result.exception.toString()}');
+        print('Error en el presupeusto: ${result.exception.toString()}');
       } else if (result.data != null) {
-        print('Transacción creada exitosamente con ID: ${result.data!['crearTransaccion']['transaccion_id']}');
+        print('Presupuesto creada exitosamente con ID: ${result.data!['crearPresupuesto']['Tipo_presupuesto']}');
 
         // Limpiar caché después de la mutación
         _clearCache();
 
         // Refrescar los datos después de la mutación
-        await _refetchTransacciones(transaction.gmail);
+        await _refetchPresupuesto(gmail);
       } else {
         print('Error desconocido. Sin datos ni excepciones.');
       }
     } catch (e) {
-      print('Error al enviar la transacción: $e');
+      print('Error al enviar el presupuesto: $e');
     }
   }
 
   @override
-  Future<void> actualizarTransaccion(Transaction transaction) async {
+  Future<void> crearPreCat(String gmail) async {
     const mutation = '''
-    mutation ActualizarTransaccion(
-      \$gmail: String!,
-      \$transaccion_id: Int!,
-      \$categoria_transaccion: String,
-      \$fecha: String,
-      \$monto: Float,
-      \$nota: String,
-      \$tipo_moneda: String,
-      \$tipo_transaccion: String
+    mutation CrearPreCat(
+      \$Gmail: String!,
+      \$Id_categoria: Int!,
+      \$Nombre_categoria: String!,
+      \$Categoria_mensual: Int,
+      \$Categoria_semestral: Int,
+      \$Categoria_anual: Int,
+
     ) {
-      actualizarTransaccion(
-        gmail: \$gmail,
-        transaccion_id: \$transaccion_id,
-        categoria_transaccion: \$categoria_transaccion,
-        fecha: \$fecha,
-        monto: \$monto,
-        nota: \$nota,
-        tipo_moneda: \$tipo_moneda,
-        tipo_transaccion: \$tipo_transaccion
+      crearPreCat(
+        Gmail: \$Gmail,
+        Id_categoria: \$Id_categoria,
+        Nombre_categoria: \$Nombre_categoria,
+        Categoria_mensual: \$Categoria_mensual,
+        Categoria_semestral: \$Categoria_semestral,
+        Categoria_anual: \$Categoria_anual,
       ) {
-        transaccion_id
+        Gmail
       }
     }
     ''';
 
-    final formattedDate = DateFormat('yyyy-MM-dd').format(transaction.fecha.value);
 
     final variables = {
-      'gmail': transaction.gmail,
-      'transaccion_id': transaction.id.toInt(),
-      'categoria_transaccion': transaction.categoria.nombre.value,
-      'fecha': formattedDate.toString(),
-      'monto': transaction.monto.value,
-      'nota': transaction.nota!.isEmpty ? "--" : transaction.nota,
-      'tipo_moneda': transaction.tipoMoneda.name,
-      'tipo_transaccion': transaction.tipoTransaccion.name,
+      'Gmail': gmail,
+      'Id_categoria': 0,
+      'Nombre_categoria': "General",
+      'Categoria_mensual': 0,
+      'Categoria_semestral': 0,
+      'Categoria_anual': 0,
     };
 
     try {
@@ -173,15 +213,68 @@ class GraphQLPlanningRepository implements PlanningRepository {
       final QueryResult result = await client.mutate(options);
 
       if (result.hasException) {
-        print('Error al actualizar la transacción: ${result.exception.toString()}');
+        print('Error en el presupuesto Categoría: ${result.exception.toString()}');
       } else if (result.data != null) {
-        print('Transacción actualizada exitosamente con ID: ${result.data!['actualizarTransaccion']['transaccion_id']}');
+        print('Presupuesto creada exitosamente con ID: ${result.data!['crearPreCat']['Gmail']}');
 
         // Limpiar caché después de la mutación
         _clearCache();
 
         // Refrescar los datos después de la mutación
-        await _refetchTransacciones(transaction.gmail);
+        await _refetchPresupuesto(gmail);
+      } else {
+        print('Error desconocido. Sin datos ni excepciones.');
+      }
+    } catch (e) {
+      print('Error al enviar el presupuesto: $e');
+    }
+  }
+
+  @override
+  Future<void> actualizarMetaAhorro(String gmail, double nuevaMeta) async {
+    const mutation = '''
+    mutation ActualizarPresupuesto(
+      \$Gmail: String!,
+      \$Tipo_presupuesto: String!,
+      \$Meta_ahorro: Int,
+    ) {
+      actualizarPresupuesto(
+        Gmail: \$Gmail,
+        Tipo_presupuesto: \$Tipo_presupuesto,
+        Meta_ahorro: \$Meta_ahorro,
+
+      ) {
+        Tipo_presupuesto
+      }
+    }
+    ''';
+
+
+    final variables = {
+      'Gmail': gmail,
+      'Tipo_presupuesto': "Mensual",
+      'Meta_ahorro': nuevaMeta.toInt(),
+
+    };
+
+    try {
+      final MutationOptions options = MutationOptions(
+        document: gql(mutation),
+        variables: variables,
+      );
+
+      final QueryResult result = await client.mutate(options);
+
+      if (result.hasException) {
+        print('Error al actualizar el Presupuesto: ${result.exception.toString()}');
+      } else if (result.data != null) {
+        print('Transacción actualizada exitosamente con ID: ${result.data!['actualizarPresupuesto']['Tipo_presupuesto']}');
+
+        // Limpiar caché después de la mutación
+        _clearCache();
+
+        // Refrescar los datos después de la mutación
+        await _refetchPresupuesto(gmail);
       } else {
         print('Error desconocido. Sin datos ni excepciones.');
       }
@@ -189,6 +282,109 @@ class GraphQLPlanningRepository implements PlanningRepository {
       print('Error al enviar la solicitud de actualización: $e');
     }
   }
+
+  @override
+  Future<void> actualizarPresupuestoPlazo(String gmail, double nuevaMeta, String plazo) async {
+    // Variable para guardar la mutación específica según el plazo
+    String mutation;
+
+    // Variables comunes
+    final variables = {
+      'Gmail': gmail,
+      'Id_categoria': 0,
+    };
+
+    switch (plazo) {
+      case 'Corto plazo':
+        mutation = '''
+        mutation ActualizarPrecat(
+          \$Gmail: String!,
+          \$Id_categoria: Int!,
+          \$Categoria_mensual: Int
+        ) {
+          actualizarPrecat(
+            Gmail: \$Gmail,
+            Id_categoria: \$Id_categoria,
+            Categoria_mensual: \$Categoria_mensual
+          ) {
+            Id_categoria
+          }
+        }
+      ''';
+        variables['Categoria_mensual'] = nuevaMeta.toInt();
+        break;
+
+      case 'Mediano plazo':
+        mutation = '''
+        mutation ActualizarPrecat(
+          \$Gmail: String!,
+          \$Id_categoria: Int!,
+          \$Categoria_semestral: Int
+        ) {
+          actualizarPrecat(
+            Gmail: \$Gmail,
+            Id_categoria: \$Id_categoria,
+            Categoria_semestral: \$Categoria_semestral
+          ) {
+            Id_categoria
+          }
+        }
+      ''';
+        variables['Categoria_semestral'] = nuevaMeta.toInt();
+        break;
+
+      case 'Largo plazo':
+        mutation = '''
+        mutation ActualizarPrecat(
+          \$Gmail: String!,
+          \$Id_categoria: Int!,
+          \$Categoria_anual: Int
+        ) {
+          actualizarPrecat(
+            Gmail: \$Gmail,
+            Id_categoria: \$Id_categoria,
+            Categoria_anual: \$Categoria_anual
+          ) {
+            Id_categoria
+          }
+        }
+      ''';
+        variables['Categoria_anual'] = nuevaMeta.toInt();
+        break;
+
+      default:
+        print('Plazo no reconocido: $plazo');
+        return;
+    }
+
+    // Ejecución de la mutación
+    try {
+      final MutationOptions options = MutationOptions(
+        document: gql(mutation),
+        variables: variables,
+      );
+
+      final QueryResult result = await client.mutate(options);
+
+      if (result.hasException) {
+        print('Error al actualizar el Precat: ${result.exception.toString()}');
+      } else if (result.data != null) {
+        print('Precat actualizada exitosamente con ID: ${result.data!['actualizarPrecat']['Id_categoria']}');
+
+        // Limpiar caché después de la mutación
+        _clearCache();
+
+        // Refrescar los datos después de la mutación
+        await _refetchPresupuesto(gmail);
+      } else {
+        print('Error desconocido. Sin datos ni excepciones.');
+      }
+    } catch (e) {
+      print('Error al enviar la solicitud de actualización: $e');
+    }
+  }
+
+
 
   @override
   Future<void> eliminarTransaccion(String gmail, int id) async {
@@ -215,7 +411,7 @@ class GraphQLPlanningRepository implements PlanningRepository {
 
         _clearCache();
 
-        await _refetchTransacciones(gmail);
+        await _refetchPresupuesto(gmail);
       }
     } catch (e) {
       print('Error al eliminar la transacción: $e');
@@ -223,7 +419,13 @@ class GraphQLPlanningRepository implements PlanningRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> obtenerTransacciones(String gmail) async {
-    return await _refetchTransacciones(gmail);
+  Future<Map<String, dynamic>> obtenerPresupuesto(String gmail) async {
+    return await _refetchPresupuesto(gmail);
+  }
+
+  @override
+  Future<Map<String, dynamic>> obtenerPreCat(String gmail) async {
+    return await _refetchPreCat(gmail);
+
   }
 }
