@@ -1,0 +1,251 @@
+:root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+}
+
+a:hover {
+    color: #535bf2;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+h1 {
+    font-size: 3.2em;
+    line-height: 1.1;
+}
+
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+
+button:hover {
+    border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color: #213547;
+        background-color: #ffffff;
+    }
+
+    a:hover {
+        color: #747bff;
+    }
+
+    button {
+        background-color: #f9f9f9;
+    }
+}
+
+.homepage-container {
+    min-height: 100vh;
+    width: 100%;
+    background-color: #242424;
+    padding-bottom: 5rem;
+}
+
+.homepage-content {
+    width: 100%;
+    height: 100%;
+    padding: 1rem;
+    max-width: 48rem;
+    margin: 0 auto;
+}
+
+.homepage-header {
+    margin-bottom: 1.5rem;
+    width: 100%;
+    text-align: left;
+}
+
+.homepage-header h1 {
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: normal;
+}
+
+.homepage-header h2 {
+    font-size: 1.875rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.balance-card {
+    background-color: #5865F2;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    width: 100%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s;
+}
+
+.balance-card:hover {
+    transform: scale(1.02);
+}
+
+.transaction-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s;
+    background-color: #2a2a2a;
+}
+
+.transaction-card:hover {
+    transform: scale(1.02);
+}
+
+.transaction-positive {
+    border-left: 4px solid #22C55E;
+}
+
+.transaction-negative {
+    border-left: 4px solid #EF4444;
+}
+
+.transaction-icon {
+    padding: 0.75rem;
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.transaction-positive .transaction-icon {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #22C55E;
+}
+
+.transaction-negative .transaction-icon {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+.transaction-amount {
+    font-weight: bold;
+    font-size: 1.125rem;
+}
+
+.transaction-positive .transaction-amount {
+    color: #22C55E;
+}
+
+.transaction-negative .transaction-amount {
+    color: #EF4444;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    margin: 1.5rem 0;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border-radius: 0.75rem;
+    border: 1px solid #3a3a3a;
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #2a2a2a;
+    border-top: 1px solid #3a3a3a;
+    padding: 0.75rem 0;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.nav-buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.nav-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: background-color 0.2s;
+    color: #9CA3AF;
+}
+
+.nav-button:hover {
+    background-color: #333333;
+}
+
+.nav-button.active {
+    color: #5865F2;
+}
+
+.nav-button.inactive {
+    color: #9CA3AF;
+}
+
+.transaction-description {
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.transaction-date {
+    color: #9CA3AF;
+    font-size: 0.875rem;
+}
+
+.section-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
