@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  app:
+    image: ramses3salinas/abfp_dashboard:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" 
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      APPSYNC_ENDPOINT: "https://6uebol3qyvgwlfwrjm6tpf2iuq.appsync-api.us-east-2.amazonaws.com/graphql"
+      APPSYNC_API_KEY: "da2-iysrja5w5jfkzljzn4jlwney4u"

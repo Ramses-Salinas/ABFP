@@ -1,0 +1,16 @@
+<configuration>
+    <!-- Define el nivel de log global -->
+    <logger name="com.abfp.gestionUsuarios" level="debug"/>
+
+    <!-- Define el appender para consola -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Asocia el appender STDOUT con el root logger -->
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
